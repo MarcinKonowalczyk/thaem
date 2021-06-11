@@ -1,20 +1,23 @@
 #include "app.hpp"
+
 #include "defines.hpp"
+#include "colors.hpp"
+#include "interval_transforms.hpp"
 
 #include <iostream>
 
-#define WHITE glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)
-#define GREY glm::vec4(0.5f, 0.5f, 0.5f, 1.0f)
-#define BLACK glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
-
 void App::setup() {
     int return_value = font.load("./data/Staatliches-Regular.ttf");
-    std::cout << return_value << std::endl;
+    them.position = glm::vec2(width/2, height/2);
 }
 
 void App::draw(piksel::Graphics& g) {
-    static uint wipeCounter = 0;
+
+    // Draw current state
     switch (state) {
+        case NONE: {
+            std::cout << "oops... " << state << std::endl;
+        } // 'break' is missing on purpose
         case START: {
             g.push();
             g.background(GREY);
@@ -22,33 +25,41 @@ void App::draw(piksel::Graphics& g) {
             g.textSize(30);
             g.strokeWeight(0);
             g.fill(BLACK);
-            g.text("Hello", 10, height/2);
+            g.text("Press (the mouse button) to start...", 10, height/2);
             g.pop();
         } break;
         case GAME: {
-            g.push();
-            g.background(glm::vec4(0.5f, 0.5f, 0.5f, 0.9f));
-            g.rect(mousePosition.x, mousePosition.y, 100, 100);
-            g.pop();
+            g.background(glm::vec4(GREY_3, 0.9f));
+            them.update(mousePosition, width, height);
+            them.draw(g, mousePosition);
         } break;
-        case WIPE: {
-            if (wipeCounter == 0) {
-                wipeCounter = WIPE_DURATION + 1;
-            }
-            
-            // Draw the wipe
-            float alpha = 1-(float)wipeCounter/WIPE_DURATION;
-            g.push();
-            g.fill(BLACK);
-            g.strokeWeight(0);
-            g.rect(0,0,alpha*width,height);
-            g.pop();
-            wipeCounter--; // dec the wipe counter
-            if (wipeCounter == 0) { // Switch to the queued state
-                state = queuedState;
-                queuedState = NONE;
-            }
-        } break;
+        case RESTART: {
+            // TODO
+            exit(1);
+        }
+    }
+
+    // Draw wipe
+    if (wipeCounter > 0) {
+        // Blend from 0 to 1 over the wipe duration
+        float alpha = 1-(float)wipeCounter/WIPE_DURATION;
+        
+        g.push();
+        g.fill(glm::vec4(0.0,0.0,0.0,0.9f));
+        g.strokeWeight(0);
+        g.rect(
+            slowStart2(secondHalfHold(alpha))*width, 0,
+            fastStart2(firstHalfHold(alpha))*width, height
+        );
+        g.pop();
+
+        wipeCounter--; // dec the wipe counter
+
+        // Switch to the queued state half way through the transition
+        if ( wipeCounter < WIPE_DURATION/2 and queuedState != NONE ) {
+            state = queuedState;
+            queuedState = NONE;
+        }
     }
 }
 
@@ -58,11 +69,23 @@ void App::mouseMoved(int x, int y) {
 }
 
 void App::mousePressed(int button) {
-    if (state == START) {
-        if (button ==LEFT_MOUSE_BUTTON) {
-            state = WIPE;
-            queuedState = GAME;
-        }
+    switch (state) {
+        case START: {
+            if (button == LEFT_MOUSE_BUTTON) {
+                // Start a wipe and queue the next state
+                wipeCounter = WIPE_DURATION;
+                queuedState = GAME;
+            }
+        } break;
+        case GAME: {
+            if (button == LEFT_MOUSE_BUTTON) {
+                them.jump();
+            }
+        } break;
+        case RESTART: {
+            // TODO
+            exit(1);
+        } break;
     }
 }
 

@@ -2,11 +2,11 @@
 #define APP_HPP
 
 #include <piksel/baseapp.hpp>
+#include "them.hpp"
 
 enum AppState {
     NONE = 0,
     START,
-    WIPE,
     GAME,
     RESTART,
 };
@@ -16,14 +16,20 @@ enum AppState {
 
 #define WIDTH 640
 #define HEIGHT 480
-#define NAME "untitled gamejam project"
+#define NAME "as of yet untitled gamejam project"
+// Theme: Joined together
+// What does is mean?
+// What does it mean for that connection to break?
 
 class App : public piksel::BaseApp {
 public:
     App() : piksel::BaseApp(WIDTH, HEIGHT, NAME)
         , state(START)
         , queuedState(NONE)
-        , mousePosition(glm::vec2(WIDTH, HEIGHT)) {}
+        , wipeCounter(0)
+        , mousePosition(glm::vec2(WIDTH, HEIGHT))
+        , them(Them())
+        {}
     void setup();
     void draw(piksel::Graphics& g);
     void mouseMoved(int x, int y);
@@ -32,7 +38,11 @@ public:
 private:
     AppState state;
     AppState queuedState;
+    unsigned int wipeCounter;
     glm::vec2 mousePosition;
+    Them them;
+    /* Initialised in setup */
     piksel::Font font;
 };
+
 #endif /* APP_HPP */

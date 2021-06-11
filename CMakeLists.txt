@@ -10,6 +10,7 @@ add_subdirectory(lib/piksel)
 set(SOURCES
     src/main.cpp
     src/app.cpp
+    src/them.cpp
 )
 add_executable(index ${SOURCES})
 target_include_directories(index
