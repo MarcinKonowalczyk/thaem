@@ -13,33 +13,36 @@ void DEBUB_printVec2(glm::vec2 vec2) {
 }
 
 void Them::update(glm::vec2 mousePosition, float width, float height) {
-    glm::vec2 acceleration = glm::vec2(0.0, 0.0);
-
     glm::vec2 mouseVector = mousePosition - position;
     float mouseDistance = glm::length(mouseVector);
-    if (mouseDistance > 0) {
-        if (mouseDistance > 10) {
-            glm::vec2 mouseNormal = mouseVector / mouseDistance;
-            float alpha = mouseDistance > MAX_MOUSE_DISTANCE ? 1.0 : mouseDistance/MAX_MOUSE_DISTANCE;
-            acceleration += 0.4f * alpha * mouseNormal;
-        }
+    if (mouseDistance < THEM_RADIUS ) {
+        velocity = 0.9f*velocity + 0.1f*(0.01f*mouseVector);
+    } else {
+        glm::vec2 acceleration = glm::vec2(0,0);
+        glm::vec2 mouseNormal = mouseVector / mouseDistance;
+        float alpha = mouseDistance > MAX_MOUSE_DISTANCE ? 1.0 : mouseDistance/MAX_MOUSE_DISTANCE;
+        acceleration += ACCELERATION_COEFFICIENT * alpha * mouseNormal;
+        velocity += acceleration;
     }
 
     // Push back towards the play area
-    if (position.x > width)  { acceleration += glm::vec2(-1.0, 0.0); }
-    else if (position.x < 0) { acceleration += glm::vec2(+1.0, 0.0); }
-    if (position.y > height) { acceleration += glm::vec2(0.0, -1.0); }
-    else if (position.y < 0) { acceleration += glm::vec2(0.0, 1.0);  }
+    if (position.x > width)  { velocity += glm::vec2(-1.0, 0.0); }
+    else if (position.x < 0) { velocity += glm::vec2(+1.0, 0.0); }
+    if (position.y > height) { velocity += glm::vec2(0.0, -1.0); }
+    else if (position.y < 0) { velocity += glm::vec2(0.0, 1.0);  }
 
-    velocity += acceleration;
 
     // On jump change velocity rapidly
+    if (queuedJump and jumpCounter == 0) {
+        jumpCounter = JUMP_DURATION;
+        queuedJump = false;
+    }
     if (jumpCounter > 0) {
         if (jumpCounter == JUMP_DURATION) { // Just jumped
             if (mouseDistance > 0) {
                 glm::vec2 mouseNormal = mouseVector / mouseDistance;
                 // velocity = mouseNormal * glm::abs(glm::dot(velocity, mouseNormal));
-                velocity = mouseNormal * glm::length(velocity);
+                velocity = mouseNormal * (glm::length(velocity) + 4.0f);
             }
         }
         jumpCounter--;
@@ -56,31 +59,38 @@ void Them::update(glm::vec2 mousePosition, float width, float height) {
         velocity -= dragMagnitude * velocityNormal;
     }
 
-    if (mouseDistance < 10) {
-        velocity = glm::vec2(0,0);
-    }
-
     position += velocity;
 };
 
 void Them::draw(piksel::Graphics& g, glm::vec2 mousePosition) {
     g.push();
 
+    g.strokeWeight(2);
     g.line(position.x, position.y, mousePosition.x, mousePosition.y);
 
     g.rectMode(piksel::DrawMode::CENTER);
-    g.stroke(BLACK);
-    g.fill(WHITE);
 
-    int size = 20;
+    int themSize = 2*THEM_RADIUS;
     if (jumpCounter > 0) {
         float alpha = 1 - (float)jumpCounter/JUMP_DURATION;
         alpha = fastStart2(firstHalf(alpha)) + slowStart3(secondHalfBackwards(alpha));
-        size += 20*alpha;
+        themSize += 2*THEM_RADIUS*alpha;
+
+        int shadowSize = themSize + 2*THEM_RADIUS*alpha;
+        float yOffset = fastStart2(alpha)*4;
+        float xOffset = fastStart2(alpha)*2;
+        g.strokeWeight(0);
+        g.fill(glm::vec4(BLACK_3,0.1f));
+        g.ellipse(position.x+xOffset, position.y+yOffset, shadowSize, shadowSize);
     }
-    g.ellipse(position.x, position.y, size, size);
+
+    g.strokeWeight(2);
+    g.stroke(BLACK);
+    g.fill(WHITE);
+    g.ellipse(position.x, position.y, themSize, themSize);
 
     // Draw velocity arrow
+    g.strokeWeight(1);
     float velocityMagnitude = glm::length(velocity);
     if (velocityMagnitude > 0) {
         glm::vec2 velocityNormal = velocity / velocityMagnitude;
@@ -95,5 +105,9 @@ void Them::draw(piksel::Graphics& g, glm::vec2 mousePosition) {
 };
 
 void Them::jump() {
-    jumpCounter = JUMP_DURATION;
+    if (jumpCounter == 0) {
+        jumpCounter = JUMP_DURATION;
+    } else { // Already in a jump
+        queuedJump = true;
+    }
 }

@@ -15,6 +15,7 @@ public:
         , position(glm::vec2(0.0, 0.0))
         , velocity(glm::vec2(0.0, 0.0))
         , jumpCounter(0)
+        , queuedJump(false)
         {}
     void update(glm::vec2 mousePosition, float width, float height);
     void draw(piksel::Graphics& g, glm::vec2 mousePosition);
@@ -24,6 +25,7 @@ private:
     glm::vec2 velocity;
     float height;
     unsigned int jumpCounter;
+    bool queuedJump;
 };
 
 #endif /* THEM_HPP */
