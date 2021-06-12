@@ -29,11 +29,13 @@ public:
         , wipeCounter(0)
         , mousePosition(glm::vec2(WIDTH, HEIGHT))
         , them(Them())
+        , rightMousePressed(false)
         {}
     void setup();
     void draw(piksel::Graphics& g);
     void mouseMoved(int x, int y);
     void mousePressed(int button);
+    void mouseReleased(int button);
     void keyPressed(int key);
 private:
     AppState state;
@@ -41,6 +43,7 @@ private:
     unsigned int wipeCounter;
     glm::vec2 mousePosition;
     Them them;
+    bool rightMousePressed;
     /* Initialised in setup */
     piksel::Font font;
 };

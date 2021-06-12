@@ -8,7 +8,7 @@
 
 void App::setup() {
     int return_value = font.load("./data/Staatliches-Regular.ttf");
-    them.position = glm::vec2(width/2, height/2);
+    them.setPosition(width/2, height/2);
 }
 
 void App::draw(piksel::Graphics& g) {
@@ -29,9 +29,13 @@ void App::draw(piksel::Graphics& g) {
             g.pop();
         } break;
         case GAME: {
-            g.background(glm::vec4(GREY_3, 0.9f));
-            them.update(mousePosition, width, height);
-            them.draw(g, mousePosition);
+            if (rightMousePressed) {
+                g.background(glm::vec4(LINES_Y_3, 0.9f));
+            } else {
+                g.background(glm::vec4(GREY_3, 0.9f));
+            }
+            them.update(mousePosition, width, height, rightMousePressed);
+            them.draw(g, mousePosition, rightMousePressed);
         } break;
         case RESTART: {
             // TODO
@@ -79,13 +83,21 @@ void App::mousePressed(int button) {
         } break;
         case GAME: {
             if (button == LEFT_MOUSE_BUTTON) {
-                them.jump();
+                them.addWaypoint(mousePosition);
+            } else if (button == RIGHT_MOUSE_BUTTON ) {
+                rightMousePressed = true;
             }
         } break;
         case RESTART: {
             // TODO
             exit(1);
         } break;
+    }
+}
+
+void App::mouseReleased(int button) {
+    if (state == GAME and button == RIGHT_MOUSE_BUTTON) {
+        rightMousePressed = false;
     }
 }
 
