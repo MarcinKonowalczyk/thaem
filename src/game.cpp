@@ -1,4 +1,4 @@
-#include "app.hpp"
+#include "game.hpp"
 
 #include "defines.hpp"
 #include "colors.hpp"
@@ -6,12 +6,12 @@
 
 #include <iostream>
 
-void App::setup() {
+void Game::setup() {
     int return_value = font.load("./data/Staatliches-Regular.ttf");
     them.setPosition(width/2, height/2);
 }
 
-void App::draw(piksel::Graphics& g) {
+void Game::draw(piksel::Graphics& g) {
 
     // Draw current state
     switch (state) {
@@ -67,12 +67,12 @@ void App::draw(piksel::Graphics& g) {
     }
 }
 
-void App::mouseMoved(int x, int y) {
+void Game::mouseMoved(int x, int y) {
     mousePosition.x = x;
     mousePosition.y = y;
 }
 
-void App::mousePressed(int button) {
+void Game::mousePressed(int button) {
     switch (state) {
         case START: {
             if (button == LEFT_MOUSE_BUTTON) {
@@ -83,7 +83,7 @@ void App::mousePressed(int button) {
         } break;
         case GAME: {
             if (button == LEFT_MOUSE_BUTTON) {
-                them.addWaypoint(mousePosition);
+                them.addLink(mousePosition);
             } else if (button == RIGHT_MOUSE_BUTTON ) {
                 rightMousePressed = true;
             }
@@ -95,13 +95,13 @@ void App::mousePressed(int button) {
     }
 }
 
-void App::mouseReleased(int button) {
+void Game::mouseReleased(int button) {
     if (state == GAME and button == RIGHT_MOUSE_BUTTON) {
         rightMousePressed = false;
     }
 }
 
-void App::keyPressed(int key) {
+void Game::keyPressed(int key) {
     if (key == 256) {
         #ifndef __EMSCRIPTEN__
         exit(0);

@@ -1,10 +1,10 @@
-#ifndef APP_HPP
-#define APP_HPP
+#ifndef GAME_HPP
+#define GAME_HPP
 
 #include <piksel/baseapp.hpp>
 #include "them.hpp"
 
-enum AppState {
+enum GameState {
     NONE = 0,
     START,
     GAME,
@@ -21,9 +21,9 @@ enum AppState {
 // What does is mean?
 // What does it mean for that connection to break?
 
-class App : public piksel::BaseApp {
+class Game : public piksel::BaseApp {
 public:
-    App() : piksel::BaseApp(WIDTH, HEIGHT, NAME)
+    Game() : piksel::BaseApp(WIDTH, HEIGHT, NAME)
         , state(START)
         , queuedState(NONE)
         , wipeCounter(0)
@@ -38,8 +38,8 @@ public:
     void mouseReleased(int button);
     void keyPressed(int key);
 private:
-    AppState state;
-    AppState queuedState;
+    GameState state;
+    GameState queuedState;
     unsigned int wipeCounter;
     glm::vec2 mousePosition;
     Them them;
@@ -48,4 +48,4 @@ private:
     piksel::Font font;
 };
 
-#endif /* APP_HPP */
+#endif /* GAME_HPP */

@@ -12,5 +12,8 @@
 #define FAST_ACCELERATION 0.3f
 
 #define DASH_LENGTH 10 // pixels
+#define MAX_LINKS 20
+#define LINK_WOBBLE 0.5f // disk radius pixels
+#define LINK_IFRAMES 30 // frames
 
 #endif /* DEFINES_HPP */

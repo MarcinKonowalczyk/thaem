@@ -1,12 +1,12 @@
-// #include <glm/glm.hpp>
-
 #include "them.hpp"
 #include "defines.hpp"
 #include "colors.hpp"
 #include "interval_transforms.hpp"
+#include "link.hpp"
 
 #include <iostream>
 #include <glm/gtc/random.hpp>
+#include <deque>
 
 void DEBUB_printVec2(glm::vec2 vec2) {
     std::cout << vec2.x << " " << vec2.y << std::endl;
@@ -16,28 +16,25 @@ void Them::update(
     glm::vec2 mousePosition,
     float width, float height,
     bool rightMousePressed) {
+    bool hasLinks = links.size() > 0;
+    
+    updateLinks();
 
-    bool hasWaypoints = waypoints.size() > 0;
-
-    for (glm::vec2& waypoint : waypoints ) {
-        waypoint += glm::diskRand(0.5);
-    }
-
-    glm::vec2 waypoint;
-    if (hasWaypoints and not rightMousePressed) {
-        waypoint = waypoints[0];
+    glm::vec2 link;
+    if (hasLinks and not rightMousePressed) {
+        link = links[0].end;
     } else {
-        waypoint = mousePosition;
+        link = mousePosition;
     }
 
-    glm::vec2 waypointVector = waypoint - position;
-    float waypointDistance = glm::length(waypointVector);
+    glm::vec2 linkVector = link - position;
+    float linkDistance = glm::length(linkVector);
 
-    if (waypointDistance < THEM_RADIUS ) {
-        if (hasWaypoints and not rightMousePressed) {
-            waypoints.pop_front();
+    if (linkDistance < THEM_RADIUS ) {
+        if (hasLinks and not rightMousePressed) {
+            links.pop_front();
         } else {
-            velocity = 0.9f*velocity + 0.1f*(0.01f*waypointVector);
+            velocity = 0.9f*velocity + 0.1f*(0.01f*linkVector);
         }
     }
 
@@ -45,18 +42,18 @@ void Them::update(
 
     acceleration += glm::diskRand(0.05);
 
-    if (waypointDistance > 0 and hasWaypoints) {
-        glm::vec2 waypointNormal = waypointVector / waypointDistance;
-        float alpha = waypointDistance > MAX_MOUSE_DISTANCE ? 1.0 : waypointDistance/MAX_MOUSE_DISTANCE;
-        acceleration += (rightMousePressed ? FAST_ACCELERATION : SLOW_ACCELERATION) * alpha * waypointNormal;
+    if (linkDistance > 0 and hasLinks) {
+        glm::vec2 linkNormal = linkVector / linkDistance;
+        float alpha = linkDistance > MAX_MOUSE_DISTANCE ? 1.0 : linkDistance/MAX_MOUSE_DISTANCE;
+        acceleration += (rightMousePressed ? FAST_ACCELERATION : SLOW_ACCELERATION) * alpha * linkNormal;
     }
 
-
     // Push back towards the play area
-    if (position.x > width)  { acceleration += glm::vec2(-1.0, 0.0); }
-    else if (position.x < 0) { acceleration += glm::vec2(+1.0, 0.0); }
-    if (position.y > height) { acceleration += glm::vec2(0.0, -1.0); }
-    else if (position.y < 0) { acceleration += glm::vec2(0.0, 1.0);  }
+    float additionalBoundary = 0.5f*THEM_RADIUS;
+    if (position.x > width-additionalBoundary)  { acceleration += glm::vec2(-1.0, 0.0); }
+    else if (position.x < additionalBoundary) { acceleration += glm::vec2(+1.0, 0.0); }
+    if (position.y > height-additionalBoundary) { acceleration += glm::vec2(0.0, -1.0); }
+    else if (position.y < additionalBoundary) { acceleration += glm::vec2(0.0, 1.0);  }
 
     velocity += acceleration;
 
@@ -65,13 +62,24 @@ void Them::update(
     if (velocityMagnitude > 0) {
         glm::vec2 velocityNormal = velocity / velocityMagnitude;
         float dragMagnitude = 0.01 * velocityMagnitude * velocityMagnitude;
-        if (waypointDistance < 40) {
+        if (linkDistance < 20) {
             dragMagnitude *= 10;
         }
         velocity -= dragMagnitude * velocityNormal;
     }
 
     position += velocity;
+
+    if (hasLinks) {
+        links.front().start = position;
+    }
+
+    if (hasLinks and not rightMousePressed) {
+        mouseLink.start = links.back().end;
+    } else {
+        mouseLink.start = position;
+    }
+    mouseLink.end = mousePosition;
 };
 
 void Them::draw(
@@ -79,73 +87,56 @@ void Them::draw(
     glm::vec2 mousePosition,
     bool rightMousePressed) {
     g.push();
-    bool hasWaypoints = waypoints.size() > 0;
+    bool hasLinks = links.size() > 0;
 
     // Draw path
     g.strokeWeight(2);
     glm::vec2 drawPosition = position;
     int lineCounter = 0;
-    for (glm::vec2& waypoint : waypoints) {
+    for (Link& link : links) {
         if (lineCounter == 0) {
             if (rightMousePressed) {
-                g.stroke(BLACK); g.fill(BLACK);
+                link.color = BLACK;
             } else {
-                g.stroke(LINES_B); g.fill(LINES_B);
+                link.color = LINES_B;
             }
         } else if (lineCounter == 1) {
             if (rightMousePressed) {
-                g.stroke(BLACK); g.fill(BLACK);
+                link.color = BLACK;
             } else {
-                g.stroke(LINES_R); g.fill(LINES_R);
+                link.color = LINES_R;
             }
         } else {
-            g.stroke(BLACK); g.fill(BLACK);
+            link.color = BLACK;
         }
-        g.ellipse(waypoint.x, waypoint.y, 4,4);
-        g.line(drawPosition.x, drawPosition.y, waypoint.x, waypoint.y);
-        drawPosition = waypoint;
+        link.draw(g);
         lineCounter++;
     }
 
     // Dashed line to the mouse position
-    if (rightMousePressed) { drawPosition = position; }
-    glm::vec2 dashedVector = mousePosition - drawPosition;
-    float dashedVectorLength = glm::length(dashedVector);
+    mouseLink.dashed = true;
     if (rightMousePressed) {
-        g.stroke(BLACK); g.fill(BLACK);
+        mouseLink.color = BLACK;
     } else {
-        g.stroke(glm::mix(WHITE,BLACK,0.65)); g.fill(glm::mix(WHITE,BLACK,0.65));
+        mouseLink.color = glm::mix(WHITE,BLACK,0.65);
     }
-    if (dashedVectorLength < DASH_LENGTH) {
-        g.line(drawPosition.x, drawPosition.y, mousePosition.x, mousePosition.y);
-    } else {
-        glm::vec2 dashedVectorNormal = dashedVector / dashedVectorLength;
-        glm::vec2 dash = (float) DASH_LENGTH * dashedVectorNormal;
-        int i = 0;
-        for (; i < (dashedVectorLength/DASH_LENGTH-1); i += 2) {
-            g.line(
-                drawPosition.x + i*dash.x, drawPosition.y + i*dash.y,
-                drawPosition.x + (i+1)*dash.x, drawPosition.y + (i+1)*dash.y
-                );
-        }
-        // Draw the final little bit of the dashed line
-        if (glm::fract(dashedVectorLength/(2*DASH_LENGTH)) < 0.5) {
-            g.line(
-                drawPosition.x + i*dash.x, drawPosition.y + i*dash.y,
-                mousePosition.x, mousePosition.y
-            );
+    mouseLink.draw(g);
+
+    glm::vec4 themColor = WHITE;
+    int i = 0;
+    for (auto it = links.begin(); it != links.end(); it++) {
+        if (i++ > 1 and it->intersectsCircle(position,THEM_RADIUS)) {
+            themColor = LINES_Y;
         }
     }
-
-
+    // Draw Them
     g.rectMode(piksel::DrawMode::CENTER);
-
     g.strokeWeight(2);
     g.stroke(BLACK);
     if (rightMousePressed) {
         g.fill(BLACK);
     } else {
-        g.fill(WHITE);
+        g.fill(themColor);
     }
     g.ellipse(position.x, position.y, 2*THEM_RADIUS, 2*THEM_RADIUS);
 
@@ -164,10 +155,63 @@ void Them::draw(
     g.pop();
 };
 
-void Them::addWaypoint(glm::vec2 position) {
-    waypoints.push_back(position);
+void Them::addLink(glm::vec2 newPosition) {
+    bool hasLinks = links.size() > 0;
+    if (links.size() < MAX_LINKS-1) {
+        Link newLink = Link();
+        newLink.start = hasLinks ? links.back().end : position;
+        newLink.end = newPosition;
+        // if (hasLinks) {
+        //     links.back().setAsPreviousLinkOf(&newLink);
+        // }
+        links.push_back(newLink);
+    }
 };
 
 void Them::setPosition(float x, float y) {
     position = glm::vec2(x,y);
+}
+
+void Them::updateLinks() {
+    if (links.size() == 0) { return; }
+
+    // Link wobble
+    int i = 0;
+    for (; i < links.size(); i ++) {
+        glm::vec2 wobble = glm::diskRand(LINK_WOBBLE);
+        links.at(i).start += wobble;
+        if (i > 0) {
+            links.at(i-1).end += wobble;
+        }
+    }
+    links.at(--i).end += glm::diskRand(LINK_WOBBLE);
+
+    // Hit links with the them
+    for (int i = 0; i < links.size(); i++) {
+        Link& link = links.at(i);
+        if (i > 1 and link.intersectsCircle(position,THEM_RADIUS)) {
+            link.hit();
+        }
+    }
+
+    // Remove dead links
+    std::deque<Link> newLinks = std::deque<Link>(0);
+    glm::vec2 previousEnd = position;
+    for (int i = 0; i < links.size(); i++) {
+        Link& link = links.at(i);
+        if (link.durability > 0) {
+            link.start = previousEnd;
+            newLinks.push_back(link);
+        }
+        previousEnd = links.at(i).end;
+    }
+    links = newLinks;
+
+    // Decrement iframes counter
+    for (int i = 0; i < links.size(); i++) {
+        Link& link = links.at(i);
+        if (link.iframesCounter > 0) {
+            link.iframesCounter--;
+        }
+    }
 }

@@ -9,8 +9,10 @@ add_subdirectory(lib/piksel)
 
 set(SOURCES
     src/main.cpp
-    src/app.cpp
+    src/game.cpp
     src/them.cpp
+    src/link.cpp
+    src/bullet.cpp
 )
 add_executable(index ${SOURCES})
 target_include_directories(index
