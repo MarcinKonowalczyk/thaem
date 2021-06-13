@@ -1,3 +1,4 @@
 build-osx
 build-web
 settings.json
+.DS_Store

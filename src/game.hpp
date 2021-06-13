@@ -28,8 +28,8 @@ enum GameState {
 #define LEFT_MOUSE_BUTTON 0
 #define RIGHT_MOUSE_BUTTON 1
 
-#define WIDTH 640
-#define HEIGHT 480
+#define WIDTH 960//640
+#define HEIGHT 540//480
 // #define NAME "as of yet untitled gamejam project"
 #define GAME_NAME "THAEM"
 // Theme: Joined together

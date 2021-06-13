@@ -23,18 +23,26 @@ std::vector<std::string> deathMessages = {
     "Dont get hit",
     "Try harder",
     "...",
-    "Dont get hit"
+    "Dont get hit",
+    "My God, there's blood everywhere!",
+    "YOU DIED",
 };
 std::string deathMessage = "#";
 
-// typedef std::pair<std::string,int>> zenMessagePair
-
-// std::vector<zenMessage> zenMessages = {
-//     zenMessagePair("a","A"),
-//     zenMessagePair("b","B"),
-//     zenMessagePair("c","C"),
-// };
-// std::string zenMessage = zenMessagePair("#","#");
+typedef std::pair<std::string,std::string> messagePair;
+std::vector<messagePair> zenMessages = {
+    messagePair("Mind is like a mad monkey - always in", "search for a typewriter to write Shakespeare on"),
+    messagePair("To seek is to suffer", ""),
+    messagePair("Rest and be kind", ""),
+    messagePair("Gently fold the whites", "making sure not to deflate them"),
+    messagePair("Do not seek the truth", "truth is a lie"),
+    messagePair("You're walking in the woods", "There's no one around and your phone is dead"),
+    messagePair("Life is a balance of holding on and letting go", "Unless you're a mountain climber"),
+    messagePair("Electricity is power", ""),
+    messagePair("If I didn't have you", "someone else would do"),
+    messagePair("God is dead", "Long live god")
+};
+messagePair zenMessage = messagePair("#","#");
 
 int endlessCounter = 7;
 
@@ -108,8 +116,8 @@ void Game::draw(piksel::Graphics& g) {
         } break;
         case ENDLESS_INTERVAL: {
             levelText = "Level " + std::to_string(endlessCounter);
-            flavourText1 = "...";
-            flavourText2 = "...";
+            flavourText1 = zenMessage.first;
+            flavourText2 = zenMessage.second;
         }
     }
 
@@ -191,14 +199,15 @@ void Game::draw(piksel::Graphics& g) {
             nextState = INTERVAL_6;
         } break;
         case ENDLESS: {
-            spawnInterval = ENDLESS_SPAWN_INTERVAL;
             hasBlueBullets = true;
             hasRedBullets = true;
             hasBlackBullets = true;
-            blueBulletLimit = ENDLESS_BLUE_LIMIT;
-            redBulletLimit = ENDLESS_RED_LIMIT;
-            blackBulletLimit = ENDLESS_RED_LIMIT;
-            scoreRequirement = ENDLESS_SCORE_REQUIREMENT;
+            float alpha = glm::min(20.0, (float)endlessCounter-8.0)/20.0;
+            spawnInterval = ENDLESS_SPAWN_INTERVAL - slowStart4(alpha)*15;
+            blueBulletLimit = ENDLESS_BLUE_LIMIT + slowStart2(alpha)*5;
+            redBulletLimit = ENDLESS_RED_LIMIT + fastStart2(secondHalf(alpha))*5;
+            blackBulletLimit = ENDLESS_RED_LIMIT + backAndForth(alpha)*5;
+            scoreRequirement = ENDLESS_SCORE_REQUIREMENT + alpha*200;
             nextState = ENDLESS_INTERVAL;
         } break;
     }
@@ -311,9 +320,13 @@ void Game::draw(piksel::Graphics& g) {
         g.rect(0,0,width, height);
         g.textSize(30);
         g.strokeWeight(0);
-        g.fill(BLACK);
-        // g.text("Sorry, you died", 10, height/2-15);
+        if (deathMessage == "YOU DIED") {
+            g.fill(LINES_X);
+        } else {
+            g.fill(glm::vec4(BLACK_3,0.9));
+        }
         g.text(deathMessage, 10, height/2-15);
+        g.fill(glm::vec4(BLACK_3,0.9));
         g.text("Click to try again", 10, height/2+15);
         g.pop();
     }
@@ -336,16 +349,18 @@ void Game::draw(piksel::Graphics& g) {
 
         // Switch to the queued state half way through the transition
         if ( wipeCounter < WIPE_DURATION/2 and queuedState != NONE ) {
+            if (queuedState == ENDLESS) {
+                zenMessage = *select_randomly(zenMessages.begin(), zenMessages.end(), rng);
+                if (state != ENDLESS) {
+                    endlessCounter++;
+                }
+            }
             state = queuedState;
             queuedState = NONE;
             switch (state) {
                 LEVELS_SWITCH {
                     setupCleanLevel();
                 } break;
-            }
-            if (state==ENDLESS) {
-                endlessCounter++;
-                // zenMessage = *select_randomly(zenMessages.begin(), zenMessages.end(), rng);
             }
         }
     }
