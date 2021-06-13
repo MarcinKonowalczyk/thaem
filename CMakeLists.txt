@@ -3,7 +3,7 @@ project(myproject)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-set(CMAKE_CXX_FLAGS "-O3 -Wfatal-errors")
+set(CMAKE_CXX_FLAGS "-O3 -Wfatal-errors -Wno-switch")
 # --embed-file /data/Staatliches-Regular.ttf
 
 add_subdirectory(lib/piksel)
