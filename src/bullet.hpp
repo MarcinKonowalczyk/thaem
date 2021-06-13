@@ -43,6 +43,8 @@ public:
     float radius;
     bool collision;
     unsigned int durability;
+private:
+    glm::vec2 repellCore(Bullet& other, float repellCoefficient);
 };
 
 bool spawnBlueBullet(

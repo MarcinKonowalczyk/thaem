@@ -47,33 +47,9 @@ void Bullet::update(
     }
     
     // Repell from all other bullets
-    for (Bullet& bullet : blueBullets) {
-        glm::vec2 repellVector = bullet.position - position;
-        float repellVectorLength = glm::length(repellVector);
-        if (repellVectorLength > 0) {
-            glm::vec2 repellVectorNormal = repellVector / repellVectorLength;
-            float alpha = 1.0 - glm::min(repellVectorLength,100.0f)/100;
-            acceleration -= repellCoefficient * repellVectorNormal * slowStart4(alpha);
-        }
-    }
-    for (Bullet& bullet : redBullets) {
-        glm::vec2 repellVector = bullet.position - position;
-        float repellVectorLength = glm::length(repellVector);
-        if (repellVectorLength > 0) {
-            glm::vec2 repellVectorNormal = repellVector / repellVectorLength;
-            float alpha = 1.0 - glm::min(repellVectorLength,100.0f)/100;
-            acceleration -= repellCoefficient * repellVectorNormal * slowStart4(alpha);
-        }
-    }
-    for (Bullet& bullet : blackBullets) {
-        glm::vec2 repellVector = bullet.position - position;
-        float repellVectorLength = glm::length(repellVector);
-        if (repellVectorLength > 0) {
-            glm::vec2 repellVectorNormal = repellVector / repellVectorLength;
-            float alpha = 1.0 - glm::min(repellVectorLength,100.0f)/100;
-            acceleration -= repellCoefficient * repellVectorNormal * slowStart4(alpha);
-        }
-    }
+    for (Bullet& bullet : blueBullets) { acceleration += repellCore(bullet, repellCoefficient); }
+    for (Bullet& bullet : redBullets) { acceleration += repellCore(bullet, repellCoefficient); }
+    for (Bullet& bullet : blackBullets) { acceleration += repellCore(bullet, repellCoefficient); }
 
     float additionalBoundary = 0.5f*radius;
     if (collision) {
@@ -99,20 +75,31 @@ void Bullet::update(
         glm::vec2 velocityNormal = velocity / velocityMagnitude;
         float dragMagnitude;
         switch (type) {
-            case T_BLACK: { dragMagnitude = BLACK_BULLET_DRAG; } break;
             case T_BLUE: { dragMagnitude = BLUE_BULLET_DRAG; } break; 
-            case T_RED: { dragMagnitude = RED_BULLET_DRAG;} break;
+            case T_RED: {
+                dragMagnitude = RED_BULLET_DRAG;
+                // Slow down a bit close to the them
+                if (attractVectorLength < 30) { dragMagnitude *= 2; }
+            } break;
+            case T_BLACK: { dragMagnitude = BLACK_BULLET_DRAG; } break;
         }
         dragMagnitude *= (velocityMagnitude * velocityMagnitude);
-        // TODO
-        // if (linkDistance < 20) {
-        //     dragMagnitude *= 10;
-        // }
         velocity -= dragMagnitude * velocityNormal;
     }
-
     position += velocity;
 };
+
+glm::vec2 Bullet::repellCore(Bullet& other, float repellCoefficient) {
+    glm::vec2 repellVector = other.position - position;
+    float repellVectorLength = glm::length(repellVector);
+    glm::vec2 acceleration_component = glm::vec2(0,0);
+    if (repellVectorLength > 0) {
+        glm::vec2 repellVectorNormal = repellVector / repellVectorLength;
+        float alpha = 1.0 - glm::min(repellVectorLength,100.0f)/100;
+        acceleration_component -= repellCoefficient * repellVectorNormal * slowStart4(alpha);
+    }
+    return acceleration_component;
+}
 
 void Bullet::draw(
     piksel::Graphics& g,

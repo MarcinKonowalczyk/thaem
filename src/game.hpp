@@ -55,7 +55,7 @@ public:
     void mouseReleased(int button);
     void keyPressed(int key);
 private:
-    std::string getScoreString();
+    std::string getScoreString(int scoreIn);
     void setupCleanLevel();
     void wipeTo(GameState state);
     GameState state;

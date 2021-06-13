@@ -12,6 +12,7 @@
 #include <string> 
 
 void Game::setup() {
+    // TODO: nothing to do here for now, but fix the font hack in the future
     // std::string staatliches_regular_decoded = base64_decode(staatliches_regular_encoded);
     // font = piksel::Font();
     // font._load((const unsigned char*) staatliches_regular_decoded.c_str());
@@ -32,7 +33,6 @@ void Game::draw(piksel::Graphics& g) {
     switch (state) {
         case START: {
             g.push();
-            // g.textFont(font);
             g.strokeWeight(0);
             g.fill(BLACK);
             g.textSize(50);
@@ -44,7 +44,6 @@ void Game::draw(piksel::Graphics& g) {
         } break;
         case INTERVAL_1: {
             g.push();
-            // g.textFont(font);
             g.textSize(30);
             g.strokeWeight(0);
             g.fill(BLACK);
@@ -57,14 +56,14 @@ void Game::draw(piksel::Graphics& g) {
         } break;
         case INTERVAL_2: {
             g.push();
-            // g.textFont(font);
             g.textSize(30);
             g.strokeWeight(0);
             g.fill(BLACK);
             g.text("Level 3", 10, height/2-15);
             g.fill(glm::vec4(BLACK_3,0.3f));
             g.textSize(30);
-            g.text("", 10, height/2+15);
+            g.text("Some enemies hit", 10, height/2+15);
+            g.text("harder than others", 10, height/2+30+15);
             g.pop();
         } break;
     }
@@ -153,10 +152,10 @@ void Game::draw(piksel::Graphics& g) {
         LEVELS_SWITCH {
             g.push();
             // g.textFont(font);
-            g.textSize(30);
+            g.textSize(25);
             g.strokeWeight(0);
             g.fill(glm::vec4(BLACK_3,0.1));
-            g.text(getScoreString(), 8, 30);
+            g.text(getScoreString(score) + " / " + getScoreString(scoreRequirement), 10, 28);
             g.pop();
         }
         default:;
@@ -213,17 +212,6 @@ void Game::mouseMoved(int x, int y) {
 
 void Game::mousePressed(int button) {
     switch (state) {
-        // case LEVEL_3:
-        // case LEVEL_2: {
-        //     if (button == RIGHT_MOUSE_BUTTON ) {
-        //         rightMousePressed = true;
-        //     }
-        // } // nobreak
-        // case LEVEL_1: { // Enable the right mouse button only after 1st level
-        //     if (button == LEFT_MOUSE_BUTTON) {
-        //         them.addLink(mousePosition);
-        //     }
-        // } break;
         LEVELS_SWITCH {
             if (button == RIGHT_MOUSE_BUTTON ) {
                 rightMousePressed = true;
@@ -262,12 +250,12 @@ void Game::keyPressed(int key) {
 #endif /* __EMSCRIPTEN__ */
 }
 
-std::string Game::getScoreString() {
+std::string Game::getScoreString(int scoreIn) {
     std::string scoreString = "";
-    if (score <= 999) { scoreString += "0"; }
-    if (score <= 99) { scoreString += "0"; }
-    if (score <= 9) { scoreString += "0"; }
-    scoreString += std::to_string(score);
+    if (scoreIn <= 999) { scoreString += "0"; }
+    if (scoreIn <= 99) { scoreString += "0"; }
+    if (scoreIn <= 9) { scoreString += "0"; }
+    scoreString += std::to_string(scoreIn);
     return scoreString;
 }
 
