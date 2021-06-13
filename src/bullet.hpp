@@ -28,14 +28,17 @@ public:
         std::vector<Bullet> blueBullets,
         std::vector<Bullet> redBullets,
         std::vector<Bullet> blackBullets,
-        glm::vec2 themPosition
+        glm::vec2 themPosition,
+        float blueDragMultiplier,
+        float redDragMultiplier
         );
     void draw(
         piksel::Graphics& g,
         bool rightMousePressed,
         glm::vec2 mousePosition,
         glm::vec2 themPosition,
-        bool dead);
+        bool dead
+        );
     void hit();
     glm::vec2 position;
     glm::vec2 velocity;
@@ -44,15 +47,19 @@ public:
     bool collision;
     unsigned int durability;
 private:
-    glm::vec2 repellCore(Bullet& other, float repellCoefficient);
+    glm::vec2 repellCore(
+        Bullet& other,
+        float repellCoefficient)
+        ;
 };
 
-bool spawnBlueBullet(
-    std::vector<Bullet>& blueBullets,
-    float width, float height);
+Bullet makeBullet(float width, float height);
 
-bool spawnRedBullet(
-    std::vector<Bullet>& redBullets,
-    float width, float height);
+bool spawnBullet(
+    bulletType type,
+    std::vector<Bullet>& bulletsVector,
+    float width, float height,
+    int bulletLimit
+    );
 
 #endif /* BULLET_HPP */

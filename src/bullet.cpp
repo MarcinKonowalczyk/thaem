@@ -16,7 +16,9 @@ void Bullet::update(
         std::vector<Bullet> blueBullets,
         std::vector<Bullet> redBullets,
         std::vector<Bullet> blackBullets,
-        glm::vec2 themPosition) {
+        glm::vec2 themPosition,
+        float blueDragMultiplier,
+        float redDragMultiplier) {
     
     glm::vec2 acceleration = glm::vec2(0,0);
 
@@ -75,10 +77,9 @@ void Bullet::update(
         glm::vec2 velocityNormal = velocity / velocityMagnitude;
         float dragMagnitude;
         switch (type) {
-            case T_BLUE: { dragMagnitude = BLUE_BULLET_DRAG; } break; 
+            case T_BLUE: { dragMagnitude = BLUE_BULLET_DRAG * blueDragMultiplier; } break; 
             case T_RED: {
-                dragMagnitude = RED_BULLET_DRAG;
-                // Slow down a bit close to the them
+                dragMagnitude = RED_BULLET_DRAG * redDragMultiplier;
                 if (attractVectorLength < 30) { dragMagnitude *= 2; }
             } break;
             case T_BLACK: { dragMagnitude = BLACK_BULLET_DRAG; } break;
@@ -151,12 +152,8 @@ void Bullet::hit() {
 
 const int bulletOffset = 10;
 
-bool spawnBlueBullet(
-    std::vector<Bullet>& blueBullets,
-    float width, float height) {
-    if (blueBullets.size() >= BULLET_LIMIT) { return false; }
+Bullet makeBullet(float width, float height) {
     Bullet newBullet = Bullet();
-    newBullet.type = T_BLUE;
     float choice = glm::linearRand(0.0, 1.0);
     if (choice < 0.25) { // Left
         float bulletHeight = glm::linearRand(0.0f - bulletOffset, (float)height - bulletOffset);
@@ -175,34 +172,20 @@ bool spawnBlueBullet(
         newBullet.position = glm::vec2(bulletWidth, height + bulletOffset);
         newBullet.velocity = glm::vec2(0.0, -1.0);
     }
-    blueBullets.push_back(newBullet);
-    return true;
+    return newBullet;
 }
 
-bool spawnRedBullet(
-    std::vector<Bullet>& redBullets,
-    float width, float height) {
-    if (redBullets.size() >= BULLET_LIMIT) { return false; }
-    Bullet newBullet = Bullet();
-    newBullet.type = T_RED;
-    float choice = glm::linearRand(0.0, 1.0);
-    if (choice < 0.25) { // Left
-        float bulletHeight = glm::linearRand(0.0f - bulletOffset, (float)height - bulletOffset);
-        newBullet.position = glm::vec2(-bulletOffset, bulletHeight);
-        newBullet.velocity = glm::vec2(1.0, 0.0);
-    } else if (choice < 0.5) { // Top
-        float bulletWidth = glm::linearRand(0.0f - bulletOffset, (float)width - bulletOffset);
-        newBullet.position = glm::vec2(bulletWidth, -bulletOffset);
-        newBullet.velocity = glm::vec2(0.0, 1.0);
-    } else if (choice < 0.75) { // Right
-        float bulletHeight = glm::linearRand(0.0f + bulletOffset, (float)height - bulletOffset);
-        newBullet.position = glm::vec2(width + bulletOffset, bulletHeight);
-        newBullet.velocity = glm::vec2(-1.0, 0.0);
-    } else { // Bottom
-        float bulletWidth = glm::linearRand(0.0f + bulletOffset, (float)width - bulletOffset);
-        newBullet.position = glm::vec2(bulletWidth, height + bulletOffset);
-        newBullet.velocity = glm::vec2(0.0, -1.0);
+bool spawnBullet(
+    bulletType type,
+    std::vector<Bullet>& bulletsVector,
+    float width, float height,
+    int bulletLimit) {
+    if (bulletsVector.size() >= bulletLimit) {
+        return false;
+    } else {
+        Bullet newBullet = makeBullet(width, height);
+        newBullet.type = type;
+        bulletsVector.push_back(newBullet);
+        return true;
     }
-    redBullets.push_back(newBullet);
-    return true;
 }
