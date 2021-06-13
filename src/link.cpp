@@ -77,9 +77,10 @@ bool Link::intersectsCircle(glm::vec2 center, float radius) {
     return orthogonalVectorLength < radius;
 }
 
-bool Link::hit() {
+bool Link::hit(int damage) {
     if (iframesCounter == 0) {
-        if (durability > 0) { durability--; }
+        if (durability > damage) { durability--; }
+        else { durability -= damage; }
         iframesCounter = LINK_IFRAMES;
         return true;
     } else {

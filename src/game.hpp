@@ -15,8 +15,11 @@ enum GameState {
     INTERVAL_1,
     LEVEL_2,
     INTERVAL_2,
-    LEVEL_3
+    LEVEL_3,
+    INTERVAL_3
 };
+
+#define LEVELS_SWITCH case LEVEL_1: case LEVEL_2: case LEVEL_3:
 
 #define LEFT_MOUSE_BUTTON 0
 #define RIGHT_MOUSE_BUTTON 1

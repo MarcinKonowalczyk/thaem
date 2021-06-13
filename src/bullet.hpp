@@ -25,12 +25,16 @@ public:
         glm::vec2 mousePosition,
         float width, float height,
         bool rightMousePressed,
-        std::vector<Bullet> blueBullets
+        std::vector<Bullet> blueBullets,
+        std::vector<Bullet> redBullets,
+        std::vector<Bullet> blackBullets,
+        glm::vec2 themPosition
         );
     void draw(
         piksel::Graphics& g,
         bool rightMousePressed,
         glm::vec2 mousePosition,
+        glm::vec2 themPosition,
         bool dead);
     void hit();
     glm::vec2 position;
@@ -43,6 +47,10 @@ public:
 
 bool spawnBlueBullet(
     std::vector<Bullet>& blueBullets,
+    float width, float height);
+
+bool spawnRedBullet(
+    std::vector<Bullet>& redBullets,
     float width, float height);
 
 #endif /* BULLET_HPP */

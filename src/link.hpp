@@ -18,7 +18,7 @@ public:
     void update();
     void draw(piksel::Graphics& g);
     bool intersectsCircle(glm::vec2 center, float radius);
-    bool hit();
+    bool hit(int damage = 1);
     glm::vec2 start;
     glm::vec2 end;
     int durability;

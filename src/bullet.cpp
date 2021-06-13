@@ -13,36 +13,66 @@ void Bullet::update(
         glm::vec2 mousePosition,
         float width, float height,
         bool rightMousePressed,
-        std::vector<Bullet> blueBullets) {
+        std::vector<Bullet> blueBullets,
+        std::vector<Bullet> redBullets,
+        std::vector<Bullet> blackBullets,
+        glm::vec2 themPosition) {
     
     glm::vec2 acceleration = glm::vec2(0,0);
 
     acceleration += glm::diskRand(0.05);
-
+    glm::vec2 attractVector;
+    float repellCoefficient = 0;
+    float attractCoefficient = 0;
     switch (type) {
         case T_BLACK: {
             // TODO
         } break;
         case T_BLUE: {
-            glm::vec2 attractVector = mousePosition - position;
-            float attractVectorLength = glm::length(attractVector);
-            if (attractVectorLength > 0) {
-                glm::vec2 attractVectorNormal = attractVector / attractVectorLength;
-                acceleration += BLUE_BULLET_MOUSE_ATTRACT * attractVectorNormal;
-            }
-            for (Bullet& bullet : blueBullets) {
-                glm::vec2 repellVector = bullet.position - position;
-                float repellVectorLength = glm::length(repellVector);
-                if (repellVectorLength > 0) {
-                    glm::vec2 repellVectorNormal = repellVector / repellVectorLength;
-                    float alpha = 1.0 - glm::min(repellVectorLength,100.0f)/100;
-                    acceleration -= BLUE_BULLET_FRIENDLY_REPELL * repellVectorNormal * slowStart4(alpha);
-                }
-            }
+            attractVector = mousePosition - position;
+            attractCoefficient = BLUE_BULLET_MOUSE_ATTRACT;
+            repellCoefficient = BLUE_BULLET_FRIENDLY_REPELL;
         } break; 
         case T_RED: {
-            // TODO
+            attractVector = themPosition - position;
+            attractCoefficient = RED_BULLET_THEM_ATTRACT;
+            repellCoefficient = RED_BULLET_FRIENDLY_REPELL;
         } break;
+    }
+
+    float attractVectorLength = glm::length(attractVector);
+    if (attractVectorLength > 0) {
+        glm::vec2 attractVectorNormal = attractVector / attractVectorLength;
+        acceleration += attractCoefficient * attractVectorNormal;
+    }
+    
+    // Repell from all other bullets
+    for (Bullet& bullet : blueBullets) {
+        glm::vec2 repellVector = bullet.position - position;
+        float repellVectorLength = glm::length(repellVector);
+        if (repellVectorLength > 0) {
+            glm::vec2 repellVectorNormal = repellVector / repellVectorLength;
+            float alpha = 1.0 - glm::min(repellVectorLength,100.0f)/100;
+            acceleration -= repellCoefficient * repellVectorNormal * slowStart4(alpha);
+        }
+    }
+    for (Bullet& bullet : redBullets) {
+        glm::vec2 repellVector = bullet.position - position;
+        float repellVectorLength = glm::length(repellVector);
+        if (repellVectorLength > 0) {
+            glm::vec2 repellVectorNormal = repellVector / repellVectorLength;
+            float alpha = 1.0 - glm::min(repellVectorLength,100.0f)/100;
+            acceleration -= repellCoefficient * repellVectorNormal * slowStart4(alpha);
+        }
+    }
+    for (Bullet& bullet : blackBullets) {
+        glm::vec2 repellVector = bullet.position - position;
+        float repellVectorLength = glm::length(repellVector);
+        if (repellVectorLength > 0) {
+            glm::vec2 repellVectorNormal = repellVector / repellVectorLength;
+            float alpha = 1.0 - glm::min(repellVectorLength,100.0f)/100;
+            acceleration -= repellCoefficient * repellVectorNormal * slowStart4(alpha);
+        }
     }
 
     float additionalBoundary = 0.5f*radius;
@@ -69,15 +99,9 @@ void Bullet::update(
         glm::vec2 velocityNormal = velocity / velocityMagnitude;
         float dragMagnitude;
         switch (type) {
-            case T_BLACK: {
-                dragMagnitude = BLACK_BULLET_DRAG;
-            } break;
-            case T_BLUE: {
-                dragMagnitude = BLUE_BULLET_DRAG;
-            } break; 
-            case T_RED: {
-                dragMagnitude = RED_BULLET_DRAG;
-            } break;
+            case T_BLACK: { dragMagnitude = BLACK_BULLET_DRAG; } break;
+            case T_BLUE: { dragMagnitude = BLUE_BULLET_DRAG; } break; 
+            case T_RED: { dragMagnitude = RED_BULLET_DRAG;} break;
         }
         dragMagnitude *= (velocityMagnitude * velocityMagnitude);
         // TODO
@@ -94,6 +118,7 @@ void Bullet::draw(
     piksel::Graphics& g,
     bool rightMousePressed,
     glm::vec2 mousePosition,
+    glm::vec2 themPosition,
     bool dead) {
 
     if (dead) {
@@ -107,7 +132,9 @@ void Bullet::draw(
                 drawDashedLine(g, position, mousePosition, DASH_LENGTH);
             } break; 
             case T_RED: {
-                // 
+                g.strokeWeight(2);
+                g.stroke(glm::vec4(BLACK_3,0.1));
+                drawDashedLine(g, position, themPosition, DASH_LENGTH);
             } break;
         }
     }
@@ -135,11 +162,12 @@ void Bullet::hit() {
     if (durability > 0) { durability--; }
 }
 
+const int bulletOffset = 10;
+
 bool spawnBlueBullet(
     std::vector<Bullet>& blueBullets,
     float width, float height) {
     if (blueBullets.size() >= BULLET_LIMIT) { return false; }
-    int bulletOffset = 10;
     Bullet newBullet = Bullet();
     newBullet.type = T_BLUE;
     float choice = glm::linearRand(0.0, 1.0);
@@ -161,5 +189,33 @@ bool spawnBlueBullet(
         newBullet.velocity = glm::vec2(0.0, -1.0);
     }
     blueBullets.push_back(newBullet);
+    return true;
+}
+
+bool spawnRedBullet(
+    std::vector<Bullet>& redBullets,
+    float width, float height) {
+    if (redBullets.size() >= BULLET_LIMIT) { return false; }
+    Bullet newBullet = Bullet();
+    newBullet.type = T_RED;
+    float choice = glm::linearRand(0.0, 1.0);
+    if (choice < 0.25) { // Left
+        float bulletHeight = glm::linearRand(0.0f - bulletOffset, (float)height - bulletOffset);
+        newBullet.position = glm::vec2(-bulletOffset, bulletHeight);
+        newBullet.velocity = glm::vec2(1.0, 0.0);
+    } else if (choice < 0.5) { // Top
+        float bulletWidth = glm::linearRand(0.0f - bulletOffset, (float)width - bulletOffset);
+        newBullet.position = glm::vec2(bulletWidth, -bulletOffset);
+        newBullet.velocity = glm::vec2(0.0, 1.0);
+    } else if (choice < 0.75) { // Right
+        float bulletHeight = glm::linearRand(0.0f + bulletOffset, (float)height - bulletOffset);
+        newBullet.position = glm::vec2(width + bulletOffset, bulletHeight);
+        newBullet.velocity = glm::vec2(-1.0, 0.0);
+    } else { // Bottom
+        float bulletWidth = glm::linearRand(0.0f + bulletOffset, (float)width - bulletOffset);
+        newBullet.position = glm::vec2(bulletWidth, height + bulletOffset);
+        newBullet.velocity = glm::vec2(0.0, -1.0);
+    }
+    redBullets.push_back(newBullet);
     return true;
 }

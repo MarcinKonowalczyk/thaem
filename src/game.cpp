@@ -19,11 +19,17 @@ void Game::setup() {
 
 void Game::draw(piksel::Graphics& g) {
     g.background(glm::vec4(GREY_3, 0.9f));
-    // Draw current state
+
+    // Update them when in a level
     switch (state) {
-        case NONE: {
-            std::cout << "oops... " << state << std::endl;
-        } // 'break' is missing on purpose
+        LEVELS_SWITCH {
+            them.update(mousePosition, width, height, rightMousePressed, blueBullets, redBullets, blackBullets, score);
+            if (them.dead) { deathScreen = true; }
+        } break;
+    }
+
+    // Draw screens between levels
+    switch (state) {
         case START: {
             g.push();
             // g.textFont(font);
@@ -36,31 +42,6 @@ void Game::draw(piksel::Graphics& g) {
             g.text("Click to start...", 10, height/2+15);
             g.pop();
         } break;
-        case LEVEL_1: {
-            them.update(mousePosition, width, height, rightMousePressed, blueBullets, redBullets, blackBullets, score);
-            if (them.dead) { deathScreen = true; }
-            
-            // Spawn new bullets
-            int bulletOffset = 10;
-            if (spawnCounter == 0) {
-                if (spawnBlueBullet(blueBullets, width, height)) { spawnCounter = LEVEL1_SPAWN_INTERVAL; }
-            } else if ( spawnCounter > 0 ) {
-                spawnCounter--;
-            };
-
-            // Update and draw bullets
-            if (!blueBullets.empty()) {
-                for (Bullet& bullet : blueBullets) { bullet.update(mousePosition, width, height, rightMousePressed, blueBullets); }
-                for (Bullet& bullet : blueBullets) { bullet.draw(g, rightMousePressed, mousePosition, them.dead); }
-            }
-
-            them.draw(g, mousePosition, rightMousePressed);
-
-            if (score >= LEVEL1_SCORE_REQUIREMENT and wipeCounter == 0 and !them.dead) {
-                wipeCounter = WIPE_DURATION;
-                queuedState = INTERVAL_1;
-            }
-        } break;
         case INTERVAL_1: {
             g.push();
             // g.textFont(font);
@@ -70,34 +51,9 @@ void Game::draw(piksel::Graphics& g) {
             g.text("Level 2", 10, height/2-15);
             g.fill(glm::vec4(BLACK_3,0.3f));
             g.textSize(30);
-            g.text("You might wan to try the", 10, height/2+15);
+            g.text("You might want to try the", 10, height/2+15);
             g.text("other mouse button too", 10, height/2+30+15);
             g.pop();
-        } break;
-        case LEVEL_2: {
-            them.update(mousePosition, width, height, rightMousePressed, blueBullets, redBullets, blackBullets, score);
-            if (them.dead) { deathScreen = true; }
-            
-            // Spawn new bullets
-            int bulletOffset = 10;
-            if (spawnCounter == 0) {
-                if (spawnBlueBullet(blueBullets, width, height)) { spawnCounter = LEVEL2_SPAWN_INTERVAL; }
-            } else if ( spawnCounter > 0 ) {
-                spawnCounter--;
-            };
-
-            // Update and draw bullets
-            if (!blueBullets.empty()) {
-                for (Bullet& bullet : blueBullets) { bullet.update(mousePosition, width, height, rightMousePressed, blueBullets); }
-                for (Bullet& bullet : blueBullets) { bullet.draw(g, rightMousePressed, mousePosition, them.dead); }
-            }
-            
-            them.draw(g, mousePosition, rightMousePressed);
-
-            if (score >= LEVEL2_SCORE_REQUIREMENT and wipeCounter == 0 and !them.dead) {
-                wipeCounter = WIPE_DURATION;
-                queuedState = INTERVAL_2;
-            }
         } break;
         case INTERVAL_2: {
             g.push();
@@ -108,15 +64,93 @@ void Game::draw(piksel::Graphics& g) {
             g.text("Level 3", 10, height/2-15);
             g.fill(glm::vec4(BLACK_3,0.3f));
             g.textSize(30);
-            g.text("...", 10, height/2+15);
+            g.text("", 10, height/2+15);
             g.pop();
+        } break;
+    }
+
+    // Draw levels
+    bool hasBlueBullets = false;
+    bool hasRedBullets = false;
+    bool hasBlackBullets = false;
+
+    // Default states
+    int spawnInterval = LEVEL1_SPAWN_INTERVAL;
+    int scoreRequirement = LEVEL1_SCORE_REQUIREMENT;
+    GameState nextState = START;
+
+    switch (state) {
+        case LEVEL_1: {
+            spawnInterval = LEVEL1_SPAWN_INTERVAL;
+            hasBlueBullets = true;
+            scoreRequirement = LEVEL1_SCORE_REQUIREMENT;
+            nextState = INTERVAL_1;
+        } break;
+        case LEVEL_2: {
+            spawnInterval = LEVEL2_SPAWN_INTERVAL;
+            hasBlueBullets = true;
+            scoreRequirement = LEVEL2_SCORE_REQUIREMENT;
+            nextState = INTERVAL_2;
+        } break;
+        case LEVEL_3: {
+            spawnInterval = LEVEL3_SPAWN_INTERVAL;
+            hasRedBullets = true;
+            scoreRequirement = LEVEL3_SCORE_REQUIREMENT;
+            nextState = INTERVAL_3;
+        } break;
+    }
+    
+    switch (state) {
+        LEVELS_SWITCH {
+            if (spawnCounter == 0) { // Spawn new bullets
+                if (hasBlueBullets) {
+                   if (spawnBlueBullet(blueBullets, width, height)) { spawnCounter = spawnInterval; }
+                }
+                if (hasRedBullets) {
+                    if (spawnRedBullet(redBullets, width, height)) { spawnCounter = LEVEL3_SPAWN_INTERVAL; }
+                }
+            } else if ( spawnCounter > 0 ) {
+                spawnCounter--;
+            };
+
+            // Handle winning
+            if (score >= scoreRequirement and wipeCounter == 0 and !them.dead) {
+                wipeCounter = WIPE_DURATION;
+                queuedState = nextState;
+            }
+        } break;
+    }
+
+    // Update and draw bullets
+    if (hasBlueBullets) {
+        if (!blueBullets.empty()) {
+            for (Bullet& bullet : blueBullets) { bullet.update(mousePosition, width, height, rightMousePressed, blueBullets, redBullets, blackBullets, them.position); }
+            for (Bullet& bullet : blueBullets) { bullet.draw(g, rightMousePressed, mousePosition, them.position, them.dead); }
+        }
+    }
+    if (hasRedBullets) {
+        if (!redBullets.empty()) { // Update and draw bullets
+            for (Bullet& bullet : redBullets) { bullet.update(mousePosition, width, height, rightMousePressed, blueBullets, redBullets, blackBullets, them.position); }
+            for (Bullet& bullet : redBullets) { bullet.draw(g, rightMousePressed, mousePosition, them.position, them.dead); }
+        }
+    }
+    if (hasBlackBullets) {
+        if (!redBullets.empty()) { // Update and draw bullets
+            for (Bullet& bullet : blackBullets) { bullet.update(mousePosition, width, height, rightMousePressed, blueBullets, redBullets, blackBullets, them.position); }
+            for (Bullet& bullet : blackBullets) { bullet.draw(g, rightMousePressed, mousePosition, them.position, them.dead); }
+        }
+    }
+
+    // Draw the them
+    switch (state) {
+        LEVELS_SWITCH {
+            them.draw(g, mousePosition, rightMousePressed);
         } break;
     }
 
     // Print score if in a level
     switch (state) {
-        case LEVEL_1:
-        case LEVEL_2: {
+        LEVELS_SWITCH {
             g.push();
             // g.textFont(font);
             g.textSize(30);
@@ -164,9 +198,7 @@ void Game::draw(piksel::Graphics& g) {
             state = queuedState;
             queuedState = NONE;
             switch (state) {
-                case LEVEL_1:
-                case LEVEL_2:
-                case LEVEL_3: {
+                LEVELS_SWITCH {
                     setupCleanLevel();
                 } break;
             }
@@ -181,14 +213,21 @@ void Game::mouseMoved(int x, int y) {
 
 void Game::mousePressed(int button) {
     switch (state) {
-        case LEVEL_3:
-        case LEVEL_2: {
+        // case LEVEL_3:
+        // case LEVEL_2: {
+        //     if (button == RIGHT_MOUSE_BUTTON ) {
+        //         rightMousePressed = true;
+        //     }
+        // } // nobreak
+        // case LEVEL_1: { // Enable the right mouse button only after 1st level
+        //     if (button == LEFT_MOUSE_BUTTON) {
+        //         them.addLink(mousePosition);
+        //     }
+        // } break;
+        LEVELS_SWITCH {
             if (button == RIGHT_MOUSE_BUTTON ) {
                 rightMousePressed = true;
-            }
-        } // nobreak
-        case LEVEL_1: { // Enable the right mouse button only after 1st level
-            if (button == LEFT_MOUSE_BUTTON) {
+            } else if (button == LEFT_MOUSE_BUTTON) {
                 them.addLink(mousePosition);
             }
         } break;

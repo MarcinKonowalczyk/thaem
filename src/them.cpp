@@ -196,9 +196,9 @@ void Them::collideWithBullets(
             for (auto bullet = blueBullets.begin(); bullet != blueBullets.end(); ++bullet) {
                 for (auto link = links.begin(); link != links.end(); ++link) {
                     if (link->intersectsCircle(bullet->position, bullet->radius)) {
-                        if (link->hit()) {
+                        if (link->hit(1)) {
                             bullet->hit();
-                            score += 10;
+                            score += BLUE_BULLET_SCORE;
                         }
                     }
                 }
@@ -212,6 +212,36 @@ void Them::collideWithBullets(
             }
         }
     }
+
+    if (!redBullets.empty()) {
+        // Intersections with them
+        for (auto bullet = redBullets.begin(); bullet != redBullets.end(); ++bullet) {
+            if (intersectsCircle(bullet->position, bullet->radius)) {
+                dead = true;
+            }
+        }
+        if (!links.empty()) {
+            // Intersections with links
+            for (auto bullet = redBullets.begin(); bullet != redBullets.end(); ++bullet) {
+                for (auto link = links.begin(); link != links.end(); ++link) {
+                    if (link->intersectsCircle(bullet->position, bullet->radius)) {
+                        if (link->hit(2)) {
+                            bullet->hit();
+                            score += RED_BULLET_SCORE;
+                        }
+                    }
+                }
+            }
+            // Erase bullets if needed
+            for (auto bullet = redBullets.begin(); bullet != redBullets.end(); ++bullet) {
+                if (bullet->durability <= 0) {
+                    bullet = redBullets.erase(bullet);
+                    if (bullet == redBullets.end()) { break; }
+                }
+            }
+        }
+    }
+
 };
 
 bool Them::intersectsCircle(glm::vec2 center, float radius) {
