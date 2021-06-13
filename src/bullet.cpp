@@ -13,9 +13,9 @@ void Bullet::update(
         glm::vec2 mousePosition,
         float width, float height,
         bool rightMousePressed,
-        std::vector<Bullet> blueBullets,
-        std::vector<Bullet> redBullets,
-        std::vector<Bullet> blackBullets,
+        std::vector<Bullet>& blueBullets,
+        std::vector<Bullet>& redBullets,
+        std::vector<Bullet>& blackBullets,
         glm::vec2 themPosition,
         float blueDragMultiplier,
         float redDragMultiplier) {
@@ -28,7 +28,18 @@ void Bullet::update(
     float attractCoefficient = 0;
     switch (type) {
         case T_BLACK: {
-            // TODO
+            if (!blueBullets.empty()) {
+                attractVector = blueBullets.front().position - position;
+                // attractVector = mousePosition + (blueBullets.front().position - mousePosition)*0.5f - position;
+                attractCoefficient = BLACK_BULLET_BLUE_ATTRACT;
+            } else if (!redBullets.empty()) {
+                attractVector = redBullets.front().position - position;
+                // attractVector = mousePosition + (redBullets.front().position - mousePosition)*0.5f - position;
+                attractCoefficient = BLACK_BULLET_RED_ATTRACT;
+            } else {
+                attractVector = glm::vec2(0.0, 0.0);
+            }
+            repellCoefficient = BLACK_BULLET_FRIENDLY_REPELL;
         } break;
         case T_BLUE: {
             attractVector = mousePosition - position;
@@ -51,7 +62,9 @@ void Bullet::update(
     // Repell from all other bullets
     for (Bullet& bullet : blueBullets) { acceleration += repellCore(bullet, repellCoefficient); }
     for (Bullet& bullet : redBullets) { acceleration += repellCore(bullet, repellCoefficient); }
+    // if (type != T_BLACK) { // Black bullets dont interset themselves
     for (Bullet& bullet : blackBullets) { acceleration += repellCore(bullet, repellCoefficient); }
+    // }
 
     float additionalBoundary = 0.5f*radius;
     if (collision) {
@@ -107,22 +120,34 @@ void Bullet::draw(
     bool rightMousePressed,
     glm::vec2 mousePosition,
     glm::vec2 themPosition,
+    std::vector<Bullet>& blueBullets,
+    std::vector<Bullet>& redBullets,
     bool dead) {
 
     if (dead) {
         switch (type) {
-            case T_BLACK: {
-                // 
-            } break;
             case T_BLUE: {
                 g.strokeWeight(2);
-                g.stroke(glm::vec4(BLACK_3,0.1));
+                g.stroke(glm::vec4(glm::mix(LINES_B_3,BLACK_3,0.5), 0.1));
                 drawDashedLine(g, position, mousePosition, DASH_LENGTH);
             } break; 
             case T_RED: {
                 g.strokeWeight(2);
-                g.stroke(glm::vec4(BLACK_3,0.1));
+                g.stroke(glm::vec4(glm::mix(LINES_R_3,BLACK_3,0.5), 0.1));
                 drawDashedLine(g, position, themPosition, DASH_LENGTH);
+            } break;
+            case T_BLACK: {
+                glm::vec2 targetVector = glm::vec2(0.0, 0.0);
+                if (!blueBullets.empty()) {
+                    targetVector = blueBullets.front().position;
+                    // targetVector = mousePosition + (blueBullets.front().position - mousePosition)*0.5f;
+                } else if (!redBullets.empty()) {
+                    targetVector = redBullets.front().position;
+                    // targetVector = mousePosition + (redBullets.front().position - mousePosition)*0.5f;
+                }
+                g.strokeWeight(2);
+                g.stroke(glm::vec4(glm::mix(WHITE_3,BLACK_3,0.6), 0.1));
+                drawDashedLine(g, position, targetVector, DASH_LENGTH);
             } break;
         }
     }
@@ -130,18 +155,9 @@ void Bullet::draw(
     g.strokeWeight(0);
     int radius;
     switch (type) {
-        case T_BLACK: {
-            g.fill(BLACK);
-            radius = BLACK_BULLET_RADIUS;
-        } break;
-        case T_BLUE: {
-            g.fill(LINES_B);
-            radius = BLUE_BULLET_RADIUS;
-        } break; 
-        case T_RED: {
-            g.fill(LINES_R);
-            radius = RED_BULLET_RADIUS;
-        } break;
+        case T_BLUE: { g.fill(LINES_B); radius = BLUE_BULLET_RADIUS; } break; 
+        case T_RED: { g.fill(LINES_R); radius = RED_BULLET_RADIUS; } break;
+        case T_BLACK: { g.fill(BLACK); radius = BLACK_BULLET_RADIUS; } break;
     }
     g.ellipse(position.x, position.y, radius, radius);
 };
@@ -150,7 +166,7 @@ void Bullet::hit() {
     if (durability > 0) { durability--; }
 }
 
-const int bulletOffset = 10;
+const int bulletOffset = -30; // 10;
 
 Bullet makeBullet(float width, float height) {
     Bullet newBullet = Bullet();

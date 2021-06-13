@@ -10,6 +10,33 @@
 
 #include <iostream>
 #include <string> 
+#include <algorithm>
+#include <random>
+#include <utility>
+
+static auto rng = std::default_random_engine {};
+
+std::vector<std::string> deathMessages = {
+    "Sorry, you died",
+    "Sucks to suck",
+    "Maybe next time",
+    "Dont get hit",
+    "Try harder",
+    "...",
+    "Dont get hit"
+};
+std::string deathMessage = "#";
+
+// typedef std::pair<std::string,int>> zenMessagePair
+
+// std::vector<zenMessage> zenMessages = {
+//     zenMessagePair("a","A"),
+//     zenMessagePair("b","B"),
+//     zenMessagePair("c","C"),
+// };
+// std::string zenMessage = zenMessagePair("#","#");
+
+int endlessCounter = 7;
 
 void Game::setup() {
     // TODO: nothing to do here for now, but fix the font hack in the future
@@ -25,7 +52,10 @@ void Game::draw(piksel::Graphics& g) {
     switch (state) {
         LEVELS_SWITCH {
             them.update(mousePosition, width, height, rightMousePressed, blueBullets, redBullets, blackBullets, score);
-            if (them.dead) { deathScreen = true; }
+            if (them.dead and !deathScreen) {
+                deathMessage = *select_randomly(deathMessages.begin(), deathMessages.end(), rng);
+                deathScreen = true;
+            }
         } break;
     }
 
@@ -58,8 +88,8 @@ void Game::draw(piksel::Graphics& g) {
         } break;
         case INTERVAL_3: {
             levelText = "Level 4";
-            flavourText1 = "Are we done";
-            flavourText2 = "with the warmup?";
+            flavourText1 = "Done with";
+            flavourText2 = "the warmup?";
         } break;
         case INTERVAL_4: {
             levelText = "Level 5";
@@ -68,9 +98,19 @@ void Game::draw(piksel::Graphics& g) {
         } break;
         case INTERVAL_5: {
             levelText = "Level 6";
+            flavourText1 = "It's not about";
+            flavourText2 = "the destination ...";
+        } break;
+        case INTERVAL_6: {
+            levelText = "Level 7";
+            flavourText1 = "... but about";
+            flavourText2 = "the journey";
+        } break;
+        case ENDLESS_INTERVAL: {
+            levelText = "Level " + std::to_string(endlessCounter);
             flavourText1 = "...";
             flavourText2 = "...";
-        } break;
+        }
     }
 
     switch (state) {
@@ -99,6 +139,7 @@ void Game::draw(piksel::Graphics& g) {
     GameState nextState = START;
     int blueBulletLimit = BULLET_LIMIT;
     int redBulletLimit = BULLET_LIMIT;
+    int blackBulletLimit  = BULLET_LIMIT;
     float blueDragMultiplier = 1.0f;
     float redDragMultiplier = 1.0f;
 
@@ -149,12 +190,41 @@ void Game::draw(piksel::Graphics& g) {
             scoreRequirement = LEVEL6_SCORE_REQUIREMENT;
             nextState = INTERVAL_6;
         } break;
+        case ENDLESS: {
+            spawnInterval = ENDLESS_SPAWN_INTERVAL;
+            hasBlueBullets = true;
+            hasRedBullets = true;
+            hasBlackBullets = true;
+            blueBulletLimit = ENDLESS_BLUE_LIMIT;
+            redBulletLimit = ENDLESS_RED_LIMIT;
+            blackBulletLimit = ENDLESS_RED_LIMIT;
+            scoreRequirement = ENDLESS_SCORE_REQUIREMENT;
+            nextState = ENDLESS_INTERVAL;
+        } break;
     }
-    
+
     switch (state) {
         LEVELS_SWITCH {
             if (spawnCounter == 0) { // Spawn new bullets
-                if (hasBlueBullets and hasRedBullets) { // Spawn randomly, retry if failed with the other color
+            // Spawn randomly, retry if failed with the other color
+                if (hasBlueBullets and hasRedBullets and hasBlackBullets) {
+                    float choice = glm::linearRand(0.0, 1.0);
+                    bool success;
+                    if (choice < 0.33) {
+                        success = spawnBullet(T_BLUE, blueBullets, width, height, blueBulletLimit);
+                        if (!success) { success = spawnBullet(T_RED, redBullets, width, height, redBulletLimit); }
+                        if (!success) { success = spawnBullet(T_BLACK, blackBullets, width, height, blackBulletLimit); }
+                    } else if (choice < 0.66) {
+                        success = spawnBullet(T_RED, redBullets, width, height, redBulletLimit);
+                        if (!success) { success = spawnBullet(T_BLACK, blackBullets, width, height, blackBulletLimit); }
+                        if (!success) { success = spawnBullet(T_BLUE, blueBullets, width, height, blueBulletLimit); }
+                    } else {
+                        success = spawnBullet(T_BLACK, blackBullets, width, height, blackBulletLimit);
+                        if (!success) { success = spawnBullet(T_BLUE, blueBullets, width, height, blueBulletLimit); }
+                        if (!success) { success = spawnBullet(T_RED, redBullets, width, height, redBulletLimit); }
+                    }
+                    if (success) { spawnCounter = spawnInterval; }
+                } else if (hasBlueBullets and hasRedBullets) {
                     float choice = glm::linearRand(0.0, 1.0);
                     bool success;
                     if (choice < 0.5) {
@@ -162,6 +232,17 @@ void Game::draw(piksel::Graphics& g) {
                         if (!success) { success = spawnBullet(T_RED, redBullets, width, height, redBulletLimit); }
                     } else {
                         success = spawnBullet(T_RED, redBullets, width, height, redBulletLimit);
+                        if (!success) { success = spawnBullet(T_BLUE, blueBullets, width, height, blueBulletLimit); }
+                    }
+                    if (success) { spawnCounter = spawnInterval; }
+                } else if (hasBlueBullets and hasBlackBullets) {
+                    float choice = glm::linearRand(0.0, 1.0);
+                    bool success;
+                    if (choice < 0.5) {
+                        success = spawnBullet(T_BLUE, blueBullets, width, height, blueBulletLimit);
+                        if (!success) { success = spawnBullet(T_BLACK, blackBullets, width, height, blackBulletLimit); }
+                    } else {
+                        success = spawnBullet(T_BLACK, blackBullets, width, height, blackBulletLimit);
                         if (!success) { success = spawnBullet(T_BLUE, blueBullets, width, height, blueBulletLimit); }
                     }
                     if (success) { spawnCounter = spawnInterval; }
@@ -174,7 +255,7 @@ void Game::draw(piksel::Graphics& g) {
                 spawnCounter--;
             };
 
-            // Handle winning
+            // Handle winning a level
             if (score >= scoreRequirement and wipeCounter == 0 and !them.dead) {
                 wipeCounter = WIPE_DURATION;
                 queuedState = nextState;
@@ -186,19 +267,19 @@ void Game::draw(piksel::Graphics& g) {
     if (hasBlueBullets) {
         if (!blueBullets.empty()) {
             for (Bullet& bullet : blueBullets) { bullet.update(mousePosition, width, height, rightMousePressed, blueBullets, redBullets, blackBullets, them.position, blueDragMultiplier, redDragMultiplier); }
-            for (Bullet& bullet : blueBullets) { bullet.draw(g, rightMousePressed, mousePosition, them.position, them.dead); }
+            for (Bullet& bullet : blueBullets) { bullet.draw(g, rightMousePressed, mousePosition, them.position, blueBullets, redBullets, them.dead); }
         }
     }
     if (hasRedBullets) {
         if (!redBullets.empty()) { // Update and draw bullets
             for (Bullet& bullet : redBullets) { bullet.update(mousePosition, width, height, rightMousePressed, blueBullets, redBullets, blackBullets, them.position, blueDragMultiplier, redDragMultiplier); }
-            for (Bullet& bullet : redBullets) { bullet.draw(g, rightMousePressed, mousePosition, them.position, them.dead); }
+            for (Bullet& bullet : redBullets) { bullet.draw(g, rightMousePressed, mousePosition, them.position, blueBullets, redBullets, them.dead); }
         }
     }
     if (hasBlackBullets) {
-        if (!redBullets.empty()) { // Update and draw bullets
+        if (!blackBullets.empty()) { // Update and draw bullets
             for (Bullet& bullet : blackBullets) { bullet.update(mousePosition, width, height, rightMousePressed, blueBullets, redBullets, blackBullets, them.position, blueDragMultiplier, redDragMultiplier); }
-            for (Bullet& bullet : blackBullets) { bullet.draw(g, rightMousePressed, mousePosition, them.position, them.dead); }
+            for (Bullet& bullet : blackBullets) { bullet.draw(g, rightMousePressed, mousePosition, them.position, blueBullets, redBullets, them.dead); }
         }
     }
 
@@ -231,7 +312,8 @@ void Game::draw(piksel::Graphics& g) {
         g.textSize(30);
         g.strokeWeight(0);
         g.fill(BLACK);
-        g.text("Sorry, you died", 10, height/2-15);
+        // g.text("Sorry, you died", 10, height/2-15);
+        g.text(deathMessage, 10, height/2-15);
         g.text("Click to try again", 10, height/2+15);
         g.pop();
     }
@@ -261,7 +343,19 @@ void Game::draw(piksel::Graphics& g) {
                     setupCleanLevel();
                 } break;
             }
+            if (state==ENDLESS) {
+                endlessCounter++;
+                // zenMessage = *select_randomly(zenMessages.begin(), zenMessages.end(), rng);
+            }
         }
+    }
+
+    // Vector shuffle
+    if (vectorShuffleCounter <= 0) {
+        shuffleBulletVectors();
+        vectorShuffleCounter = BULLET_VECTOR_SHUFFLE_INTERVAL;
+    } else {
+        vectorShuffleCounter--;
     }
 }
 
@@ -276,7 +370,7 @@ void Game::mousePressed(int button) {
             if (button == RIGHT_MOUSE_BUTTON ) {
                 rightMousePressed = true;
             } else if (button == LEFT_MOUSE_BUTTON) {
-                them.addLink(mousePosition);
+                them.addLink(mousePosition, score);
             }
         } break;
     }
@@ -290,6 +384,8 @@ void Game::mousePressed(int button) {
             case INTERVAL_3: { wipeTo(LEVEL_4); } break;
             case INTERVAL_4: { wipeTo(LEVEL_5); } break;
             case INTERVAL_5: { wipeTo(LEVEL_6); } break;
+            case INTERVAL_6: { wipeTo(ENDLESS); } break;
+            case ENDLESS_INTERVAL: {  wipeTo(ENDLESS); } break;
         }
     }
 }
@@ -332,4 +428,13 @@ void Game::setupCleanLevel() {
 void Game::wipeTo(GameState state) {
     wipeCounter = WIPE_DURATION;
     queuedState = state;
+}
+
+void Game::shuffleBulletVectors() {
+    if (!blueBullets.empty()) {
+        std::shuffle( blueBullets.begin(), blueBullets.end(), rng);
+    }
+    if (!redBullets.empty()) {
+        std::shuffle( redBullets.begin(), redBullets.end(), rng);
+    }
 }

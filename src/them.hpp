@@ -30,18 +30,19 @@ public:
         piksel::Graphics& g,
         glm::vec2 mousePosition,
         bool rightMousePressed);
-    void addLink(glm::vec2 position);
+    void addLink(glm::vec2 position, unsigned int& score);
     std::vector<Link> links;
     bool intersectsCircle(glm::vec2 center, float radius);
     bool dead;
     glm::vec2 position;
 private:
     void updateLinks(bool rightMousePressed);
-    void collideWithBullets(
-        std::vector<Bullet>& blueBullets,
-        std::vector<Bullet>& redBullets,
-        std::vector<Bullet>& blackBullets,
-        unsigned int& score);
+    void collisionCore(
+        std::vector<Bullet>& bulletsVector,
+        unsigned int& score,
+        int scoreIncrement,
+        int damage
+    );
     glm::vec2 velocity;
     Link mouseLink;
 };

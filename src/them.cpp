@@ -8,10 +8,6 @@
 #include <glm/gtc/random.hpp>
 #include <vector>
 
-void DEBUB_printVec2(glm::vec2 vec2) {
-    std::cout << vec2.x << " " << vec2.y << std::endl;
-}
-
 void Them::update(
     glm::vec2 mousePosition,
     float width, float height,
@@ -22,7 +18,13 @@ void Them::update(
     unsigned int& score) {
     
     updateLinks(rightMousePressed);
-    collideWithBullets(blueBullets, redBullets, blackBullets, score);
+
+    // Collide with bullets
+    if (!dead) {
+        collisionCore(blueBullets, score, BLUE_BULLET_SCORE, BLUE_BULLETS_DAMAGE);
+        collisionCore(redBullets, score, RED_BULLET_SCORE, RED_BULLETS_DAMAGE);
+        collisionCore(blackBullets, score, BLACK_BULLET_SCORE, BLACK_BULLETS_DAMAGE);
+    }
     
     glm::vec2 wapoint;
     if (!links.empty() and not rightMousePressed) {
@@ -131,13 +133,16 @@ void Them::draw(
     g.pop();
 };
 
-void Them::addLink(glm::vec2 newPosition) {
+void Them::addLink(glm::vec2 newPosition, unsigned int& score) {
     if (links.size() < LINK_LIMIT-1 and !dead) {
         Link newLink = Link();
         newLink.start = !links.empty() ? links.back().end : position;
         newLink.end = newPosition;
         newLink.durability = LINK_DURABILITY;
         links.push_back(newLink);
+        if (score > LINK_SCORE_PENALTY) {
+            score -= LINK_SCORE_PENALTY;
+        }
     }
 };
 
@@ -176,74 +181,42 @@ void Them::updateLinks(bool rightMousePressed) {
     }
 }
 
-void Them::collideWithBullets(
-    std::vector<Bullet>& blueBullets,
-    std::vector<Bullet>& redBullets,
-    std::vector<Bullet>& blackBullets,
-    unsigned int& score) {
-
-    if (dead) { return; }
-
-    if (!blueBullets.empty()) {
-        // Intersections with them
-        for (auto bullet = blueBullets.begin(); bullet != blueBullets.end(); ++bullet) {
-            if (intersectsCircle(bullet->position, bullet->radius)) {
-                dead = true;
-            }
-        }
-        if (!links.empty()) {
-            // Intersections with links
-            for (auto bullet = blueBullets.begin(); bullet != blueBullets.end(); ++bullet) {
-                for (auto link = links.begin(); link != links.end(); ++link) {
-                    if (link->intersectsCircle(bullet->position, bullet->radius)) {
-                        if (link->hit(1)) {
-                            bullet->hit();
-                            score += BLUE_BULLET_SCORE;
-                        }
-                    }
-                }
-            }
-            // Erase bullets if needed
-            for (auto bullet = blueBullets.begin(); bullet != blueBullets.end(); ++bullet) {
-                if (bullet->durability <= 0) {
-                    bullet = blueBullets.erase(bullet);
-                    if (bullet == blueBullets.end()) { break; }
-                }
-            }
-        }
-    }
-
-    if (!redBullets.empty()) {
-        // Intersections with them
-        for (auto bullet = redBullets.begin(); bullet != redBullets.end(); ++bullet) {
-            if (intersectsCircle(bullet->position, bullet->radius)) {
-                dead = true;
-            }
-        }
-        if (!links.empty()) {
-            // Intersections with links
-            for (auto bullet = redBullets.begin(); bullet != redBullets.end(); ++bullet) {
-                for (auto link = links.begin(); link != links.end(); ++link) {
-                    if (link->intersectsCircle(bullet->position, bullet->radius)) {
-                        if (link->hit(2)) {
-                            bullet->hit();
-                            score += RED_BULLET_SCORE;
-                        }
-                    }
-                }
-            }
-            // Erase bullets if needed
-            for (auto bullet = redBullets.begin(); bullet != redBullets.end(); ++bullet) {
-                if (bullet->durability <= 0) {
-                    bullet = redBullets.erase(bullet);
-                    if (bullet == redBullets.end()) { break; }
-                }
-            }
-        }
-    }
-
-};
-
 bool Them::intersectsCircle(glm::vec2 center, float radius) {
     return glm::length(center - position) < (THEM_RADIUS+radius);
+}
+
+void Them::collisionCore(
+        std::vector<Bullet>& bulletsVector,
+        unsigned int& score,
+        int scoreIncrement,
+        int damage
+    ) {
+    if (!bulletsVector.empty()) {
+        // Intersections with them
+        for (auto bullet = bulletsVector.begin(); bullet != bulletsVector.end(); ++bullet) {
+            if (intersectsCircle(bullet->position, bullet->radius)) {
+                dead = true;
+            }
+        }
+        if (!links.empty()) {
+            // Intersections with links
+            for (auto bullet = bulletsVector.begin(); bullet != bulletsVector.end(); ++bullet) {
+                for (auto link = links.begin(); link != links.end(); ++link) {
+                    if (link->intersectsCircle(bullet->position, bullet->radius)) {
+                        if (link->hit(damage)) {
+                            bullet->hit();
+                            score += scoreIncrement;
+                        }
+                    }
+                }
+            }
+            // Erase bullets if needed
+            for (auto bullet = bulletsVector.begin(); bullet != bulletsVector.end(); ++bullet) {
+                if (bullet->durability <= 0) {
+                    bullet = bulletsVector.erase(bullet);
+                    if (bullet == bulletsVector.end()) { break; }
+                }
+            }
+        }
+    }
 }

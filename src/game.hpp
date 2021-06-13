@@ -7,6 +7,8 @@
 
 #include <vector>
 #include <string>
+#include <random>
+#include <iterator>
 
 enum GameState {
     NONE = 0,
@@ -17,11 +19,11 @@ enum GameState {
     LEVEL_4, INTERVAL_4,
     LEVEL_5, INTERVAL_5,
     LEVEL_6, INTERVAL_6,
-    ENDLESS
+    ENDLESS, ENDLESS_INTERVAL
 };
 
-#define LEVELS_SWITCH case LEVEL_1: case LEVEL_2: case LEVEL_3: case LEVEL_4: case LEVEL_5: case LEVEL_6:
-#define INTERVALS_SWITCH case INTERVAL_1: case INTERVAL_2: case INTERVAL_3: case INTERVAL_4: case INTERVAL_5: case INTERVAL_6:
+#define LEVELS_SWITCH case LEVEL_1: case LEVEL_2: case LEVEL_3: case LEVEL_4: case LEVEL_5: case LEVEL_6: case ENDLESS:
+#define INTERVALS_SWITCH case INTERVAL_1: case INTERVAL_2: case INTERVAL_3: case INTERVAL_4: case INTERVAL_5: case INTERVAL_6: case ENDLESS_INTERVAL:
 
 #define LEFT_MOUSE_BUTTON 0
 #define RIGHT_MOUSE_BUTTON 1
@@ -49,6 +51,7 @@ public:
         , redBullets(std::vector<Bullet>(0))
         , blackBullets(std::vector<Bullet>(0))
         , deathScreen(false)
+        , vectorShuffleCounter(0)
         {}
     void setup();
     void draw(piksel::Graphics& g);
@@ -60,6 +63,8 @@ private:
     std::string getScoreString(int scoreIn);
     void setupCleanLevel();
     void wipeTo(GameState state);
+    void shuffleBulletVectors();
+    unsigned int vectorShuffleCounter;
     GameState state;
     GameState queuedState;
     unsigned int wipeCounter;
@@ -75,5 +80,13 @@ private:
     unsigned int score;
     bool deathScreen;
 };
+
+// https://stackoverflow.com/a/16421677/2531987
+template<typename Iter, typename RandomGenerator>
+Iter select_randomly(Iter start, Iter end, RandomGenerator& g) {
+    std::uniform_int_distribution<> dis(0, std::distance(start, end) - 1);
+    std::advance(start, dis(g));
+    return start;
+}
 
 #endif /* GAME_HPP */

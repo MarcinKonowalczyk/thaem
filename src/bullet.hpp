@@ -25,9 +25,9 @@ public:
         glm::vec2 mousePosition,
         float width, float height,
         bool rightMousePressed,
-        std::vector<Bullet> blueBullets,
-        std::vector<Bullet> redBullets,
-        std::vector<Bullet> blackBullets,
+        std::vector<Bullet>& blueBullets,
+        std::vector<Bullet>& redBullets,
+        std::vector<Bullet>& blackBullets,
         glm::vec2 themPosition,
         float blueDragMultiplier,
         float redDragMultiplier
@@ -37,6 +37,8 @@ public:
         bool rightMousePressed,
         glm::vec2 mousePosition,
         glm::vec2 themPosition,
+        std::vector<Bullet>& blueBullets,
+        std::vector<Bullet>& redBullets,
         bool dead
         );
     void hit();
