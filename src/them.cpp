@@ -6,7 +6,7 @@
 
 #include <iostream>
 #include <glm/gtc/random.hpp>
-#include <deque>
+#include <vector>
 
 void DEBUB_printVec2(glm::vec2 vec2) {
     std::cout << vec2.x << " " << vec2.y << std::endl;
@@ -15,24 +15,28 @@ void DEBUB_printVec2(glm::vec2 vec2) {
 void Them::update(
     glm::vec2 mousePosition,
     float width, float height,
-    bool rightMousePressed) {
-    bool hasLinks = links.size() > 0;
+    bool rightMousePressed,
+    std::vector<Bullet>& blueBullets,
+    std::vector<Bullet>& redBullets,
+    std::vector<Bullet>& blackBullets,
+    unsigned int& score) {
     
-    updateLinks();
-
-    glm::vec2 link;
-    if (hasLinks and not rightMousePressed) {
-        link = links[0].end;
+    updateLinks(rightMousePressed);
+    collideWithBullets(blueBullets, redBullets, blackBullets, score);
+    
+    glm::vec2 wapoint;
+    if (!links.empty() and not rightMousePressed) {
+        wapoint = links.begin()->end;
     } else {
-        link = mousePosition;
+        wapoint = mousePosition;
     }
 
-    glm::vec2 linkVector = link - position;
+    glm::vec2 linkVector = wapoint - position;
     float linkDistance = glm::length(linkVector);
 
-    if (linkDistance < THEM_RADIUS ) {
-        if (hasLinks and not rightMousePressed) {
-            links.pop_front();
+    if (linkDistance < THEM_RADIUS and !dead) {
+        if (!links.empty() and not rightMousePressed) {
+            links.erase(links.begin());
         } else {
             velocity = 0.9f*velocity + 0.1f*(0.01f*linkVector);
         }
@@ -40,9 +44,13 @@ void Them::update(
 
     glm::vec2 acceleration = glm::vec2(0,0);
 
-    acceleration += glm::diskRand(0.05);
+    if (!dead) {
+        acceleration += glm::diskRand(0.05);
+    } else {
+        acceleration += glm::diskRand(0.15);
+    }
 
-    if (linkDistance > 0 and hasLinks) {
+    if (linkDistance > 0 and !links.empty() and !dead) {
         glm::vec2 linkNormal = linkVector / linkDistance;
         float alpha = linkDistance > MAX_MOUSE_DISTANCE ? 1.0 : linkDistance/MAX_MOUSE_DISTANCE;
         acceleration += (rightMousePressed ? FAST_ACCELERATION : SLOW_ACCELERATION) * alpha * linkNormal;
@@ -70,11 +78,11 @@ void Them::update(
 
     position += velocity;
 
-    if (hasLinks) {
+    if (!links.empty()) {
         links.front().start = position;
     }
 
-    if (hasLinks and not rightMousePressed) {
+    if (!links.empty() and not rightMousePressed) {
         mouseLink.start = links.back().end;
     } else {
         mouseLink.start = position;
@@ -87,48 +95,29 @@ void Them::draw(
     glm::vec2 mousePosition,
     bool rightMousePressed) {
     g.push();
-    bool hasLinks = links.size() > 0;
 
     // Draw path
     g.strokeWeight(2);
     glm::vec2 drawPosition = position;
     int lineCounter = 0;
     for (Link& link : links) {
-        if (lineCounter == 0) {
-            if (rightMousePressed) {
-                link.color = BLACK;
-            } else {
-                link.color = LINES_B;
-            }
-        } else if (lineCounter == 1) {
-            if (rightMousePressed) {
-                link.color = BLACK;
-            } else {
-                link.color = LINES_R;
-            }
-        } else {
-            link.color = BLACK;
-        }
         link.draw(g);
         lineCounter++;
     }
 
     // Dashed line to the mouse position
-    mouseLink.dashed = true;
-    if (rightMousePressed) {
-        mouseLink.color = BLACK;
-    } else {
-        mouseLink.color = glm::mix(WHITE,BLACK,0.65);
+    if (!dead) {
+        mouseLink.dashed = true;
+        mouseLink.showDurability = false;
+        if (rightMousePressed) {
+            mouseLink.color = BLACK;
+        } else {
+            mouseLink.color = glm::mix(WHITE,BLACK,0.65);
+        }
+        mouseLink.draw(g);
     }
-    mouseLink.draw(g);
 
     glm::vec4 themColor = WHITE;
-    int i = 0;
-    for (auto it = links.begin(); it != links.end(); it++) {
-        if (i++ > 1 and it->intersectsCircle(position,THEM_RADIUS)) {
-            themColor = LINES_Y;
-        }
-    }
     // Draw Them
     g.rectMode(piksel::DrawMode::CENTER);
     g.strokeWeight(2);
@@ -139,41 +128,21 @@ void Them::draw(
         g.fill(themColor);
     }
     g.ellipse(position.x, position.y, 2*THEM_RADIUS, 2*THEM_RADIUS);
-
-    // Draw velocity arrow
-    // g.strokeWeight(1);
-    // float velocityMagnitude = glm::length(velocity);
-    // if (velocityMagnitude > 0) {
-    //     glm::vec2 velocityNormal = velocity / velocityMagnitude;
-    //     glm::vec2 velocityOrthogonal = glm::vec2(velocityNormal.y, -velocityNormal.x);
-    //     glm::vec2 velocityIndicator = velocityNormal * 50.0f;
-    //     g.line(position.x, position.y,
-    //         position.x + velocityIndicator.x,
-    //         position.y + velocityIndicator.y);
-    // }
-
     g.pop();
 };
 
 void Them::addLink(glm::vec2 newPosition) {
-    bool hasLinks = links.size() > 0;
-    if (links.size() < MAX_LINKS-1) {
+    if (links.size() < LINK_LIMIT-1 and !dead) {
         Link newLink = Link();
-        newLink.start = hasLinks ? links.back().end : position;
+        newLink.start = !links.empty() ? links.back().end : position;
         newLink.end = newPosition;
-        // if (hasLinks) {
-        //     links.back().setAsPreviousLinkOf(&newLink);
-        // }
+        newLink.durability = LINK_DURABILITY;
         links.push_back(newLink);
     }
 };
 
-void Them::setPosition(float x, float y) {
-    position = glm::vec2(x,y);
-}
-
-void Them::updateLinks() {
-    if (links.size() == 0) { return; }
+void Them::updateLinks(bool rightMousePressed) {
+    if (links.empty()) { return; }
 
     // Link wobble
     int i = 0;
@@ -186,32 +155,65 @@ void Them::updateLinks() {
     }
     links.at(--i).end += glm::diskRand(LINK_WOBBLE);
 
-    // Hit links with the them
-    for (int i = 0; i < links.size(); i++) {
-        Link& link = links.at(i);
-        if (i > 1 and link.intersectsCircle(position,THEM_RADIUS)) {
-            link.hit();
-        }
-    }
+    // Dont do anything but wobble when dead
+    if (dead) { return; }
 
     // Remove dead links
-    std::deque<Link> newLinks = std::deque<Link>(0);
+    // Careful! Mutating the vector while iterating over it.
     glm::vec2 previousEnd = position;
-    for (int i = 0; i < links.size(); i++) {
-        Link& link = links.at(i);
-        if (link.durability > 0) {
-            link.start = previousEnd;
-            newLinks.push_back(link);
+    for (auto link = links.begin(); link != links.end(); ++link) {
+        if (link->durability <= 0) {
+            link = links.erase(link);
+            if (link == links.end()) { break; }
+            link->start = previousEnd;
         }
-        previousEnd = links.at(i).end;
+        previousEnd = link->end;
     }
-    links = newLinks;
 
     // Decrement iframes counter
-    for (int i = 0; i < links.size(); i++) {
-        Link& link = links.at(i);
-        if (link.iframesCounter > 0) {
-            link.iframesCounter--;
+    for (Link& link : links) {
+        if (link.iframesCounter > 0) { link.iframesCounter--; }
+    }
+}
+
+void Them::collideWithBullets(
+    std::vector<Bullet>& blueBullets,
+    std::vector<Bullet>& redBullets,
+    std::vector<Bullet>& blackBullets,
+    unsigned int& score) {
+
+    if (dead) { return; }
+
+    if (!blueBullets.empty()) {
+        // Intersections with them
+        for (auto bullet = blueBullets.begin(); bullet != blueBullets.end(); ++bullet) {
+            if (intersectsCircle(bullet->position, bullet->radius)) {
+                dead = true;
+            }
+        }
+        if (!links.empty()) {
+            // Intersections with links
+            for (auto bullet = blueBullets.begin(); bullet != blueBullets.end(); ++bullet) {
+                for (auto link = links.begin(); link != links.end(); ++link) {
+                    if (link->intersectsCircle(bullet->position, bullet->radius)) {
+                        if (link->hit()) {
+                            bullet->hit();
+                            score += 10;
+                        }
+                    }
+                }
+            }
+            // Erase bullets if needed
+            for (auto bullet = blueBullets.begin(); bullet != blueBullets.end(); ++bullet) {
+                if (bullet->durability <= 0) {
+                    bullet = blueBullets.erase(bullet);
+                    if (bullet == blueBullets.end()) { break; }
+                }
+            }
         }
     }
+};
+
+bool Them::intersectsCircle(glm::vec2 center, float radius) {
+    return glm::length(center - position) < (THEM_RADIUS+radius);
 }

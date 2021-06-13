@@ -1,47 +1,59 @@
 #include "link.hpp"
 #include "defines.hpp"
+#include "colors.hpp"
+#include "dashed_line.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/random.hpp>
 #include <iostream>
 
-// void Link::update() {
-//     glm::vec2 startWobble = glm::diskRand(LINK_WOBBLE);
-//     start += startWobble;
-//     if (previousLink != nullptr) {
-//         previousLink->end += startWobble;
-//     }
-// }
-
 void Link::draw(piksel::Graphics& g) {
-    g.strokeWeight(durability);
-    g.stroke(color); g.fill(color);
-    // g.ellipse(start.x, start.y, 4,4);
-    // g.ellipse(end.x, end.y, 4,4);
+    
+    if (showDurability) {
+        glm::vec2 lineVector = end - start;
+        float lineVectorLength = glm::length(lineVector);
+        if (lineVectorLength > (durability*DURABILITY_INDICATOR_SPACING+THEM_RADIUS) ) {
+            glm::vec2 lineVectorNormal = lineVector / lineVectorLength;
+            g.push();
+            g.strokeWeight(0);
+            g.fill(BLACK);
+
+            for (int i = 0; i < durability; i++) {
+                float pointPosition;
+                if (durability % 2 == 0) { // Even
+                    pointPosition = lineVectorLength/2 - DURABILITY_INDICATOR_SPACING/2 - (durability/2-1)*DURABILITY_INDICATOR_SPACING + i*DURABILITY_INDICATOR_SPACING;
+                } else {
+                    pointPosition = lineVectorLength/2 - (durability-1)/2*DURABILITY_INDICATOR_SPACING + i*DURABILITY_INDICATOR_SPACING;
+                }
+                glm::vec2 pointVector = start + lineVectorNormal * pointPosition;
+                g.ellipse(pointVector.x, pointVector.y, DURABILITY_INDICATOR_SIZE, DURABILITY_INDICATOR_SIZE);
+            }
+            g.pop();
+        }
+
+        // TODO ??
+        // int stepSize = 5;
+        // glm::vec2 lineVector = end - start;
+        // float lineVectorLength = glm::length(lineVector);
+        // if (lineVectorLength > stepSize) {
+        //     glm::vec2 lineVectorNormal = lineVector / lineVectorLength;
+        //     for (int i = 0; i < lineVectorLength/stepSize; i++) {
+        //         float alpha = i / 
+        //     }
+        // }
+    }
+
+    g.strokeWeight(2);
+    g.stroke(BLACK); g.fill(BLACK);
     if (not dashed) {
         g.line(start.x, start.y, end.x, end.y);
     } else {
-    glm::vec2 dashedVector = end - start;
+        glm::vec2 dashedVector = end - start;
         float dashedVectorLength = glm::length(dashedVector);
         if (dashedVectorLength < DASH_LENGTH) {
             g.line(start.x, start.y, end.x, end.y);
         } else {
-            glm::vec2 dashedVectorNormal = dashedVector / dashedVectorLength;
-            glm::vec2 dash = (float) DASH_LENGTH * dashedVectorNormal;
-            int i = 0;
-            for (; i < (dashedVectorLength/DASH_LENGTH-1); i += 2) {
-                g.line(
-                    start.x + i*dash.x, start.y + i*dash.y,
-                    start.x + (i+1)*dash.x, start.y + (i+1)*dash.y
-                    );
-            }
-            // Draw the final little bit of the dashed line
-            if (glm::fract(dashedVectorLength/(2*DASH_LENGTH)) < 0.5) {
-                g.line(
-                    start.x + i*dash.x, start.y + i*dash.y,
-                    end.x, end.y
-                );
-            }
+            drawDashedLine(g, start, end, DASH_LENGTH);
         }
     }
 }
@@ -65,9 +77,12 @@ bool Link::intersectsCircle(glm::vec2 center, float radius) {
     return orthogonalVectorLength < radius;
 }
 
-void Link::hit() {
+bool Link::hit() {
     if (iframesCounter == 0) {
-        durability--;
+        if (durability > 0) { durability--; }
         iframesCounter = LINK_IFRAMES;
+        return true;
+    } else {
+        return false;
     }
 }

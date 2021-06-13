@@ -25,7 +25,10 @@ make --directory="${ROOT}/${BUILD_DIR}/"
 OUT=$?
 if [ $OUT == 0 ]; then
     echo "bash: Running $TARGET..."
-    "$ROOT/${BUILD_DIR}/$TARGET";
+    (
+        cd "$ROOT/${BUILD_DIR}";
+        "$ROOT/${BUILD_DIR}/$TARGET";
+    )
 else
     echo "bash: Compilation failed";
     exit $OUT

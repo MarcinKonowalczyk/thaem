@@ -3,12 +3,12 @@
 
 #include <piksel/baseapp.hpp>
 #include <glm/glm.hpp>
-#include "colors.hpp"
+#include <vector>
 
-enum bulleType {
-    BT_BLACK = 0,
-    BT_BLUE,
-    BT_RED
+enum bulletType {
+    T_BLACK,
+    T_BLUE,
+    T_RED
 };
 
 class Bullet {
@@ -16,23 +16,29 @@ public:
     Bullet() : 
         position(glm::vec2(0,0)),
         velocity(glm::vec2(0,0)),
-        type(BT_BLACK),
+        type(T_BLACK),
         radius(10),
-        collision(false)
+        collision(false),
+        durability(1)
         {}
     void update(
         glm::vec2 mousePosition,
         float width, float height,
-        bool rightMousePressed
+        bool rightMousePressed,
+        std::vector<Bullet> blueBullets
         );
     void draw(
         piksel::Graphics& g,
-        bool rightMousePressed);
+        bool rightMousePressed,
+        glm::vec2 mousePosition,
+        bool dead);
+    void hit();
     glm::vec2 position;
     glm::vec2 velocity;
-    bulleType type;
+    bulletType type;
     float radius;
     bool collision;
+    unsigned int durability;
 };
 
 #endif /* BULLET_HPP */

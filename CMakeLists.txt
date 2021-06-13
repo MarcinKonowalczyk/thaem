@@ -13,6 +13,7 @@ set(SOURCES
     src/them.cpp
     src/link.cpp
     src/bullet.cpp
+    src/dashed_line.cpp
 )
 add_executable(index ${SOURCES})
 target_include_directories(index
