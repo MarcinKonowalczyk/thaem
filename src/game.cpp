@@ -26,6 +26,7 @@ std::vector<std::string> deathMessages = {
     "Dont get hit",
     "My God, there's blood everywhere!",
     "YOU DIED",
+    "shark",
 };
 std::string deathMessage = "#";
 

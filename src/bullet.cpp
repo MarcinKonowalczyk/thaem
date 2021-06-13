@@ -166,7 +166,7 @@ void Bullet::hit() {
     if (durability > 0) { durability--; }
 }
 
-const int bulletOffset = -30; // 10;
+const int bulletOffset = 10;
 
 Bullet makeBullet(float width, float height) {
     Bullet newBullet = Bullet();
