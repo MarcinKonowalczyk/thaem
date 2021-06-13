@@ -18,7 +18,12 @@
 #define LINK_LIMIT 10
 #define BULLET_LIMIT 20
 
+// Levels
 #define LEVEL1_SPAWN_INTERVAL 120 // 120 // frames
+#define LEVEL1_SCORE_REQUIREMENT 10 // 200
+
+#define LEVEL2_SPAWN_INTERVAL 30 // 120 // frames
+#define LEVEL2_SCORE_REQUIREMENT 10 // 500
 
 // Bullet constants
 #define BLACK_BULLET_RADIUS 10 // pixels
@@ -28,7 +33,6 @@
 #define BLACK_BULLET_DRAG 0.01f
 #define BLUE_BULLET_DRAG 0.02f
 #define RED_BULLET_DRAG 0.1f
-
 
 #define BLUE_BULLET_MOUSE_ATTRACT 0.05f
 #define BLUE_BULLET_FRIENDLY_REPELL 0.1f

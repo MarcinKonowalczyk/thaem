@@ -41,4 +41,8 @@ public:
     unsigned int durability;
 };
 
+bool spawnBlueBullet(
+    std::vector<Bullet>& blueBullets,
+    float width, float height);
+
 #endif /* BULLET_HPP */

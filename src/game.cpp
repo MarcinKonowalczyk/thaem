@@ -2,20 +2,23 @@
 #include "defines.hpp"
 #include "colors.hpp"
 #include "interval_transforms.hpp"
+#include "Staatliches-Regular.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/random.hpp>
+#include <cpp-base64/base64.h>
 
 #include <iostream>
 #include <string> 
 
 void Game::setup() {
-    int return_value = font.load("./data/Staatliches-Regular.ttf");
-    // them.setPosition(width/2, height/2);
+    // std::string staatliches_regular_decoded = base64_decode(staatliches_regular_encoded);
+    // font = piksel::Font();
+    // font._load((const unsigned char*) staatliches_regular_decoded.c_str());
 }
 
 void Game::draw(piksel::Graphics& g) {
-
+    g.background(glm::vec4(GREY_3, 0.9f));
     // Draw current state
     switch (state) {
         case NONE: {
@@ -23,49 +26,27 @@ void Game::draw(piksel::Graphics& g) {
         } // 'break' is missing on purpose
         case START: {
             g.push();
-            g.background(GREY);
-            g.textFont(font);
+            // g.textFont(font);
             g.strokeWeight(0);
             g.fill(BLACK);
             g.textSize(50);
-            g.text("THAEM", 10, height/2-20);
+            g.text(GAME_NAME, 10, height/2-20);
             g.textSize(30);
             g.fill(glm::vec4(BLACK_3,0.3f));
             g.text("Click to start...", 10, height/2+15);
             g.pop();
         } break;
         case LEVEL_1: {
-            g.background(glm::vec4(GREY_3, 0.9f));
             them.update(mousePosition, width, height, rightMousePressed, blueBullets, redBullets, blackBullets, score);
             if (them.dead) { deathScreen = true; }
             
             // Spawn new bullets
             int bulletOffset = 10;
-            if (spawnCounter == 0 and blueBullets.size() < BULLET_LIMIT) {
-                spawnCounter = LEVEL1_SPAWN_INTERVAL;
-                float choice = glm::linearRand(0.0, 1.0);
-                Bullet newBullet = Bullet();
-                newBullet.type = T_BLUE;
-                if (choice < 0.25) { // Left
-                    float bulletHeight = glm::linearRand(0.0f - bulletOffset, (float)height - bulletOffset);
-                    newBullet.position = glm::vec2(-bulletOffset, bulletHeight);
-                    newBullet.velocity = glm::vec2(1.0, 0.0);
-                } else if (choice < 0.5) { // Top
-                    float bulletWidth = glm::linearRand(0.0f - bulletOffset, (float)width - bulletOffset);
-                    newBullet.position = glm::vec2(bulletWidth, -bulletOffset);
-                    newBullet.velocity = glm::vec2(0.0, 1.0);
-                } else if (choice < 0.75) { // Right
-                    float bulletHeight = glm::linearRand(0.0f + bulletOffset, (float)height - bulletOffset);
-                    newBullet.position = glm::vec2(width + bulletOffset, bulletHeight);
-                    newBullet.velocity = glm::vec2(-1.0, 0.0);
-                } else { // Bottom
-                    float bulletWidth = glm::linearRand(0.0f + bulletOffset, (float)width - bulletOffset);
-                    newBullet.position = glm::vec2(bulletWidth, height + bulletOffset);
-                    newBullet.velocity = glm::vec2(0.0, -1.0);
-                }
-                blueBullets.push_back(newBullet);
-            }
-            spawnCounter--;
+            if (spawnCounter == 0) {
+                if (spawnBlueBullet(blueBullets, width, height)) { spawnCounter = LEVEL1_SPAWN_INTERVAL; }
+            } else if ( spawnCounter > 0 ) {
+                spawnCounter--;
+            };
 
             // Update and draw bullets
             if (!blueBullets.empty()) {
@@ -74,20 +55,61 @@ void Game::draw(piksel::Graphics& g) {
             }
 
             them.draw(g, mousePosition, rightMousePressed);
+
+            if (score >= LEVEL1_SCORE_REQUIREMENT and wipeCounter == 0 and !them.dead) {
+                wipeCounter = WIPE_DURATION;
+                queuedState = INTERVAL_1;
+            }
         } break;
         case INTERVAL_1: {
             g.push();
-            g.background(GREY);
-            g.textFont(font);
+            // g.textFont(font);
             g.textSize(30);
             g.strokeWeight(0);
             g.fill(BLACK);
-            // g.text("THAEM", 10, height/2-15);
-            g.text("Click to start...", 10, height/2+15);
+            g.text("Level 2", 10, height/2-15);
+            g.fill(glm::vec4(BLACK_3,0.3f));
+            g.textSize(30);
+            g.text("You might wan to try the", 10, height/2+15);
+            g.text("other mouse button too", 10, height/2+30+15);
             g.pop();
         } break;
         case LEVEL_2: {
+            them.update(mousePosition, width, height, rightMousePressed, blueBullets, redBullets, blackBullets, score);
+            if (them.dead) { deathScreen = true; }
+            
+            // Spawn new bullets
+            int bulletOffset = 10;
+            if (spawnCounter == 0) {
+                if (spawnBlueBullet(blueBullets, width, height)) { spawnCounter = LEVEL2_SPAWN_INTERVAL; }
+            } else if ( spawnCounter > 0 ) {
+                spawnCounter--;
+            };
 
+            // Update and draw bullets
+            if (!blueBullets.empty()) {
+                for (Bullet& bullet : blueBullets) { bullet.update(mousePosition, width, height, rightMousePressed, blueBullets); }
+                for (Bullet& bullet : blueBullets) { bullet.draw(g, rightMousePressed, mousePosition, them.dead); }
+            }
+            
+            them.draw(g, mousePosition, rightMousePressed);
+
+            if (score >= LEVEL2_SCORE_REQUIREMENT and wipeCounter == 0 and !them.dead) {
+                wipeCounter = WIPE_DURATION;
+                queuedState = INTERVAL_2;
+            }
+        } break;
+        case INTERVAL_2: {
+            g.push();
+            // g.textFont(font);
+            g.textSize(30);
+            g.strokeWeight(0);
+            g.fill(BLACK);
+            g.text("Level 3", 10, height/2-15);
+            g.fill(glm::vec4(BLACK_3,0.3f));
+            g.textSize(30);
+            g.text("...", 10, height/2+15);
+            g.pop();
         } break;
     }
 
@@ -96,7 +118,7 @@ void Game::draw(piksel::Graphics& g) {
         case LEVEL_1:
         case LEVEL_2: {
             g.push();
-            g.textFont(font);
+            // g.textFont(font);
             g.textSize(30);
             g.strokeWeight(0);
             g.fill(glm::vec4(BLACK_3,0.1));
@@ -112,7 +134,7 @@ void Game::draw(piksel::Graphics& g) {
         g.strokeWeight(0);
         g.fill(glm::vec4(BLACK_3,0.3f));
         g.rect(0,0,width, height);
-        g.textFont(font);
+        // g.textFont(font);
         g.textSize(30);
         g.strokeWeight(0);
         g.fill(BLACK);
@@ -141,8 +163,12 @@ void Game::draw(piksel::Graphics& g) {
         if ( wipeCounter < WIPE_DURATION/2 and queuedState != NONE ) {
             state = queuedState;
             queuedState = NONE;
-            if (state == LEVEL_1 or state == LEVEL_2) {
-                setupCleanLevel();
+            switch (state) {
+                case LEVEL_1:
+                case LEVEL_2:
+                case LEVEL_3: {
+                    setupCleanLevel();
+                } break;
             }
         }
     }
@@ -155,29 +181,35 @@ void Game::mouseMoved(int x, int y) {
 
 void Game::mousePressed(int button) {
     switch (state) {
-        case START: {
-            if (button == LEFT_MOUSE_BUTTON) {
-                // Start a wipe and queue the next state
-                wipeCounter = WIPE_DURATION;
-                queuedState = LEVEL_1;
-            }
-        } break;
-        case LEVEL_1: {
-            if (button == LEFT_MOUSE_BUTTON) {
-                them.addLink(mousePosition);
-            } else if (button == RIGHT_MOUSE_BUTTON ) {
+        case LEVEL_3:
+        case LEVEL_2: {
+            if (button == RIGHT_MOUSE_BUTTON ) {
                 rightMousePressed = true;
             }
-            if (deathScreen and button == LEFT_MOUSE_BUTTON) {
-                wipeCounter = WIPE_DURATION;
-                queuedState = LEVEL_1;
+        } // nobreak
+        case LEVEL_1: { // Enable the right mouse button only after 1st level
+            if (button == LEFT_MOUSE_BUTTON) {
+                them.addLink(mousePosition);
             }
         } break;
+    }
+
+    if (button == LEFT_MOUSE_BUTTON) {
+        switch (state) {
+            case START: {
+                wipeTo(LEVEL_1);
+            } break;
+            case LEVEL_1: { if (deathScreen) { wipeTo(LEVEL_1); } } break;
+            case INTERVAL_1: { wipeTo(LEVEL_2); } break;
+            case LEVEL_2: { if (deathScreen) { wipeTo(LEVEL_2); } } break;
+            case INTERVAL_2: { wipeTo(LEVEL_3); } break;
+            case LEVEL_3: { if (deathScreen) { wipeTo(LEVEL_3); } } break;
+        }
     }
 }
 
 void Game::mouseReleased(int button) {
-    if (state == LEVEL_1 and button == RIGHT_MOUSE_BUTTON) {
+    if (button == RIGHT_MOUSE_BUTTON) {
         rightMousePressed = false;
     }
 }
@@ -209,4 +241,9 @@ void Game::setupCleanLevel() {
     redBullets = std::vector<Bullet>(0);
     blackBullets = std::vector<Bullet>(0);
     them.links = std::vector<Link>(0);
+}
+
+void Game::wipeTo(GameState state) {
+    wipeCounter = WIPE_DURATION;
+    queuedState = state;
 }
