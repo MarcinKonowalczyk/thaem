@@ -30,15 +30,13 @@ enum GameState {
 
 #define WIDTH 960//640
 #define HEIGHT 540//480
-// #define NAME "as of yet untitled gamejam project"
-#define GAME_NAME "THAEM"
 // Theme: Joined together
 // What does is mean?
 // What does it mean for that connection to break?
 
 class Game : public piksel::BaseApp {
 public:
-    Game() : piksel::BaseApp(WIDTH, HEIGHT, GAME_NAME)
+    Game() : piksel::BaseApp(WIDTH, HEIGHT, "THAEM")
         , state(START)
         , queuedState(NONE)
         , wipeCounter(0)

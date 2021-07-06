@@ -50,14 +50,13 @@ int endlessCounter = 7;
 void Game::setup() {
     // TODO: nothing to do here for now, but fix the font hack in the future
     std::string staatliches_regular_decoded = base64_decode(staatliches_regular_encoded);
-    font = piksel::Font();
-    font._load((const unsigned char*) staatliches_regular_decoded.c_str());
+    font._load((const unsigned char *)staatliches_regular_decoded.c_str());
 }
 
 void Game::draw(piksel::Graphics& g) {
     g.background(glm::vec4(GREY_3, 0.9f));
     g.textFont(font);
-    
+
     // Update them when in a level
     switch (state) {
         LEVELS_SWITCH {
@@ -78,9 +77,14 @@ void Game::draw(piksel::Graphics& g) {
         case START: {
             g.push();
             g.strokeWeight(0);
-            g.fill(BLACK);
             g.textSize(50);
-            g.text(GAME_NAME, 10, height/2-20);
+            // g.text("THAEM", 10, height/2-20);
+            g.fill(BLACK);
+            g.text("TH", 10, height/2-20);
+            g.fill(glm::mix(LINES_B,BLACK,0.2));
+            g.text("AE", 53.5, height/2-20);
+            g.fill(BLACK);
+            g.text("M", 95.5, height/2-20);
             g.textSize(30);
             g.fill(glm::vec4(BLACK_3,0.3f));
             g.text("Click to start...", 10, height/2+15);
