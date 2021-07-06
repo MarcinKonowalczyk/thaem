@@ -123,7 +123,9 @@ void Them::draw(
     glm::vec4 themColor = WHITE;
     // Draw Them
     g.rectMode(piksel::DrawMode::CENTER);
-    g.strokeWeight(2);
+    if (dead) { g.strokeWeight(0);
+    } else { g.strokeWeight(2);
+    }
     g.stroke(BLACK);
     if (rightMousePressed) {
         g.fill(BLACK);
@@ -198,6 +200,8 @@ void Them::collisionCore(
         for (auto bullet = bulletsVector.begin(); bullet != bulletsVector.end(); ++bullet) {
             if (intersectsCircle(bullet->position, bullet->radius)) {
                 dead = true;
+                Pop pop = Pop(T_THEM_POP, position, velocity, THEM_POP_LIFETIME, THEM_POP_RADIUS);
+                pops.push_back(pop);
             }
         }
         if (!links.empty()) {
@@ -215,8 +219,7 @@ void Them::collisionCore(
             // Erase bullets if needed
             for (auto bullet = bulletsVector.begin(); bullet != bulletsVector.end(); ++bullet) {
                 if (bullet->durability <= 0) {
-                    // TODO
-                    Pop pop = makePop(T_BLACK_POP, bullet->position, bullet->velocity);
+                    Pop pop = Pop((popType) bullet->type, bullet->position, bullet->velocity);
                     bullet = bulletsVector.erase(bullet);
                     pops.push_back(pop);
                     if (bullet == bulletsVector.end()) { break; }

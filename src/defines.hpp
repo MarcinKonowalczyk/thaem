@@ -2,13 +2,15 @@
 #define DEFINES_HPP
 
 #define WIPE_DURATION 30 // frames
-#define JUMP_DURATION 30
 #define POP_DRAG 0.01
 #define POP_LIFETIME 30 // frames
+#define POP_RADIUS 40
 
 // max mouse distance for acceleration calculation
 #define THEM_RADIUS 10 // Size of the them, in pixels
 #define MAX_MOUSE_DISTANCE 100
+#define THEM_POP_LIFETIME 200 // frames
+#define THEM_POP_RADIUS 300
 
 #define SLOW_ACCELERATION 0.05f
 #define FAST_ACCELERATION 0.3f
@@ -48,6 +50,12 @@
 #define ENDLESS_BLUE_LIMIT 10
 #define ENDLESS_RED_LIMIT 2
 #define ENDLESS_BLACK_LIMIT 5
+
+#define HORRID_SPAWN_INTERVAL 10
+#define HORRID_BLUE_LIMIT 10;
+#define HORRID_RED_LIMIT 10;
+#define HORRID_BLACK_LIMIT 10;
+#define HORRID_SCORE_REQUIREMENT 9999;
 
 // Bullet constants
 #define BLUE_BULLET_RADIUS 20 // pixels

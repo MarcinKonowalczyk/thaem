@@ -6,9 +6,9 @@
 #include <vector>
 
 enum bulletType {
-    T_BLACK,
     T_BLUE,
-    T_RED
+    T_RED,
+    T_BLACK
 };
 
 class Bullet {

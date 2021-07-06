@@ -8,10 +8,10 @@
 #include "defines.hpp"
 
 enum popType {
-    T_BLACK_POP,
     T_BLUE_POP,
     T_RED_POP,
-    // T_THEM_POP,
+    T_BLACK_POP,
+    T_THEM_POP,
     // T_LINK_POP
 };
 
@@ -21,9 +21,20 @@ public:
         position(glm::vec2(0,0)),
         velocity(glm::vec2(0,0)),
         type(T_BLACK_POP),
-        radius(30),
-        lifetime(POP_LIFETIME)
+        radius(POP_RADIUS),
+        lifetime(POP_LIFETIME),
+        max_lifetime(POP_LIFETIME)
         {}
+    Pop(popType type, glm::vec2 position, glm::vec2 velocity,
+    unsigned int lifetime = POP_LIFETIME,
+    unsigned int radius = POP_RADIUS) {
+        this->type = type;
+        this->position = position;
+        this->velocity = velocity;
+        this->lifetime = lifetime;
+        this->max_lifetime = lifetime;
+        this->radius = radius;
+    }
     void update(int width, int height);
     void draw(piksel::Graphics& g);
     glm::vec2 position;
@@ -31,11 +42,10 @@ public:
     popType type;
     float radius;
     unsigned int lifetime;
+    unsigned int max_lifetime;
 private:
-    int getCurrentRadius();
+    float getCurrentAlpha();
 };
-
-Pop makePop(popType type, glm::vec2 position, glm::vec2 velocity);
 
 void updatePops(std::vector<Pop>& pops, int width, int height);
 

@@ -46,6 +46,7 @@ std::vector<messagePair> zenMessages = {
 messagePair zenMessage = messagePair("#","#");
 
 int endlessCounter = 7;
+float horridMode = false;
 
 void Game::setup() {
     // TODO: nothing to do here for now, but fix the font hack in the future
@@ -217,6 +218,18 @@ void Game::draw(piksel::Graphics& g) {
             scoreRequirement = ENDLESS_SCORE_REQUIREMENT + alpha*200;
             nextState = ENDLESS_INTERVAL;
         } break;
+    }
+
+    // Enable horrid mode (foe fast bedug)
+    if (horridMode) {
+        spawnInterval = HORRID_SPAWN_INTERVAL;
+        hasBlueBullets = true;
+        hasRedBullets = true;
+        hasBlackBullets = true;
+        blueBulletLimit = HORRID_BLUE_LIMIT;
+        redBulletLimit = HORRID_RED_LIMIT;
+        blackBulletLimit = HORRID_BLACK_LIMIT;
+        scoreRequirement = HORRID_SCORE_REQUIREMENT;
     }
 
     // Spawn bullets
@@ -424,6 +437,9 @@ void Game::keyPressed(int key) {
     }
     std::cout << key << std::endl;
 #endif /* __EMSCRIPTEN__ */
+    if (key == 72) { // Switch horrid mode
+        horridMode = !horridMode;
+    }
 }
 
 std::string Game::getScoreString(int scoreIn) {
