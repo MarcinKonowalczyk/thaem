@@ -49,14 +49,15 @@ int endlessCounter = 7;
 
 void Game::setup() {
     // TODO: nothing to do here for now, but fix the font hack in the future
-    // std::string staatliches_regular_decoded = base64_decode(staatliches_regular_encoded);
-    // font = piksel::Font();
-    // font._load((const unsigned char*) staatliches_regular_decoded.c_str());
+    std::string staatliches_regular_decoded = base64_decode(staatliches_regular_encoded);
+    font = piksel::Font();
+    font._load((const unsigned char*) staatliches_regular_decoded.c_str());
 }
 
 void Game::draw(piksel::Graphics& g) {
     g.background(glm::vec4(GREY_3, 0.9f));
-
+    g.textFont(font);
+    
     // Update them when in a level
     switch (state) {
         LEVELS_SWITCH {
