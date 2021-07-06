@@ -30,6 +30,9 @@ The frames are saves as [Portable Pixel Map](http://paulbourke.net/dataformats/p
 - [ ] Add subtle lightning effect to links
 - [ ] Make circles slightly wobbly (so they don't just look like circles)
   - [ ] But probably don't touch the collision system
+- [ ] Subtle background decorations (vignette?)
+- [ ] Brighter background
+- [ ] Animated background on itch.io
 
 ## Dones
 
