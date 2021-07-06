@@ -18,7 +18,7 @@ Works best on Chrome / Firefox. Can also work on Safari if [WebGL 2.0](https://c
 - [x] Link in itch.io
 - [x] Second level to hard? Endless needs lower points ceiling. Maybe just lower points requirements in general?
 - [x] bullets spawning on screen
-- [ ] black bullets have no path drawn on death screen
+- [x] black bullets have no path drawn on death screen
 - [ ] ? more zen thoughts and/or death messages
 - [x] ? Color in AE in the title
 - [x] package itch.io better

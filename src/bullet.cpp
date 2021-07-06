@@ -125,19 +125,18 @@ void Bullet::draw(
     bool dead) {
 
     if (dead) {
+        g.strokeWeight(2);
+        glm::vec2 targetVector = glm::vec2(0.0, 0.0);
         switch (type) {
             case T_BLUE: {
-                g.strokeWeight(2);
                 g.stroke(glm::vec4(glm::mix(LINES_B_3,BLACK_3,0.5), 0.1));
-                drawDashedLine(g, position, mousePosition, DASH_LENGTH);
+                targetVector = mousePosition;
             } break; 
             case T_RED: {
-                g.strokeWeight(2);
                 g.stroke(glm::vec4(glm::mix(LINES_R_3,BLACK_3,0.5), 0.1));
-                drawDashedLine(g, position, themPosition, DASH_LENGTH);
+                targetVector = themPosition;
             } break;
             case T_BLACK: {
-                glm::vec2 targetVector = glm::vec2(0.0, 0.0);
                 if (!blueBullets.empty()) {
                     targetVector = blueBullets.front().position;
                     // targetVector = mousePosition + (blueBullets.front().position - mousePosition)*0.5f;
@@ -145,11 +144,10 @@ void Bullet::draw(
                     targetVector = redBullets.front().position;
                     // targetVector = mousePosition + (redBullets.front().position - mousePosition)*0.5f;
                 }
-                g.strokeWeight(2);
-                g.stroke(glm::vec4(glm::mix(WHITE_3,BLACK_3,0.6), 0.1));
-                drawDashedLine(g, position, targetVector, DASH_LENGTH);
+                g.stroke(glm::vec4(glm::mix(WHITE_3,BLACK_3,0.1), 0.1));
             } break;
         }
+        drawDashedLine(g, position, targetVector, DASH_LENGTH);
     }
 
     g.strokeWeight(0);
