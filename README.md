@@ -1,5 +1,7 @@
 # THAEM
 
+[![itch.io](https://img.shields.io/badge/itch.io-play%20it%20now-informational)](https://marcinkonowalczyk.itch.io/thaem)
+
 THAEM uses waypoints to create a path for the player, which it also used to interact with enemies (bullets). The behaviour of all of the components of the game (player and the bullets) is related to the behaviour of many other components. Hence, they can be considered all to be linked together.
 
 Made using C++ and [piksel](https://bernhardfritz.github.io/piksel/).
@@ -19,5 +21,6 @@ Works best on Chrome / Firefox. Can also work on Safari if [WebGL 2.0](https://c
 - [ ] black bullets have no path drawn on death screen
 - [ ] ? more zen thoughts and/or death messages
 - [ ] ? Color in AE in the title
-- [ ] package itch.io better
+- [x] package itch.io better
 - [ ] On-death animation
+- [x] <strike>fix itch.io banner</strike> replaced with a shield
