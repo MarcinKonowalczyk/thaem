@@ -5,6 +5,7 @@
 
 #include "link.hpp"
 #include "bullet.hpp"
+#include "pop.hpp"
 
 #include <glm/glm.hpp>
 #include <vector>
@@ -25,6 +26,7 @@ public:
         std::vector<Bullet>& blueBullets,
         std::vector<Bullet>& redBullets,
         std::vector<Bullet>& blackBullets,
+        std::vector<Pop>& pops,
         unsigned int& score);
     void draw(
         piksel::Graphics& g,
@@ -39,6 +41,7 @@ private:
     void updateLinks(bool rightMousePressed);
     void collisionCore(
         std::vector<Bullet>& bulletsVector,
+        std::vector<Pop>& pops,
         unsigned int& score,
         int scoreIncrement,
         int damage

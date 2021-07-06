@@ -15,15 +15,16 @@ void Them::update(
     std::vector<Bullet>& blueBullets,
     std::vector<Bullet>& redBullets,
     std::vector<Bullet>& blackBullets,
+    std::vector<Pop>& pops,
     unsigned int& score) {
     
     updateLinks(rightMousePressed);
 
     // Collide with bullets
     if (!dead) {
-        collisionCore(blueBullets, score, BLUE_BULLET_SCORE, BLUE_BULLETS_DAMAGE);
-        collisionCore(redBullets, score, RED_BULLET_SCORE, RED_BULLETS_DAMAGE);
-        collisionCore(blackBullets, score, BLACK_BULLET_SCORE, BLACK_BULLETS_DAMAGE);
+        collisionCore(blueBullets, pops, score, BLUE_BULLET_SCORE, BLUE_BULLETS_DAMAGE);
+        collisionCore(redBullets, pops, score, RED_BULLET_SCORE, RED_BULLETS_DAMAGE);
+        collisionCore(blackBullets, pops, score, BLACK_BULLET_SCORE, BLACK_BULLETS_DAMAGE);
     }
     
     glm::vec2 wapoint;
@@ -187,6 +188,7 @@ bool Them::intersectsCircle(glm::vec2 center, float radius) {
 
 void Them::collisionCore(
         std::vector<Bullet>& bulletsVector,
+        std::vector<Pop>& pops,
         unsigned int& score,
         int scoreIncrement,
         int damage
@@ -213,7 +215,10 @@ void Them::collisionCore(
             // Erase bullets if needed
             for (auto bullet = bulletsVector.begin(); bullet != bulletsVector.end(); ++bullet) {
                 if (bullet->durability <= 0) {
+                    // TODO
+                    Pop pop = makePop(T_BLACK_POP, bullet->position, bullet->velocity);
                     bullet = bulletsVector.erase(bullet);
+                    pops.push_back(pop);
                     if (bullet == bulletsVector.end()) { break; }
                 }
             }

@@ -4,6 +4,7 @@
 #include <piksel/baseapp.hpp>
 #include "them.hpp"
 #include "bullet.hpp"
+#include "pop.hpp"
 
 #include <vector>
 #include <string>
@@ -48,6 +49,7 @@ public:
         , blueBullets(std::vector<Bullet>(0))
         , redBullets(std::vector<Bullet>(0))
         , blackBullets(std::vector<Bullet>(0))
+        , pops(std::vector<Pop>(0))
         , deathScreen(false)
         , vectorShuffleCounter(0)
         {}
@@ -73,6 +75,7 @@ private:
     std::vector<Bullet> blueBullets;
     std::vector<Bullet> redBullets;
     std::vector<Bullet> blackBullets;
+    std::vector<Pop> pops;
     /* Initialised in setup */
     piksel::Font font;
     unsigned int score;

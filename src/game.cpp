@@ -57,9 +57,14 @@ void Game::draw(piksel::Graphics& g) {
     g.background(glm::vec4(GREY_3, 0.9f));
     g.textFont(font);
 
+    // Update pops if in a level (and if any exist)
+    switch (state) { LEVELS_SWITCH
+        updatePops(pops, width, height);
+    }
+
     // Update them when in a level
     switch (state) { LEVELS_SWITCH
-        them.update(mousePosition, width, height, rightMousePressed, blueBullets, redBullets, blackBullets, score);
+        them.update(mousePosition, width, height, rightMousePressed, blueBullets, redBullets, blackBullets, pops, score);
         if (them.dead and !deathScreen) {
             deathMessage = *select_randomly(deathMessages.begin(), deathMessages.end(), rng);
             deathScreen = true;
@@ -273,6 +278,13 @@ void Game::draw(piksel::Graphics& g) {
         }
     }
 
+    // Draw pops
+    switch (state) {LEVELS_SWITCH
+        for (Pop& pop : pops) {
+            pop.draw(g);
+        }
+    }
+
     // Update and draw bullets
     if (hasBlueBullets) {
         if (!blueBullets.empty()) {
@@ -431,6 +443,7 @@ void Game::setupCleanLevel() {
     blueBullets = std::vector<Bullet>(0);
     redBullets = std::vector<Bullet>(0);
     blackBullets = std::vector<Bullet>(0);
+    pops = std::vector<Pop>(0);
     them.links = std::vector<Link>(0);
 }
 

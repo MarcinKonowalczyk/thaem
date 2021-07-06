@@ -1,8 +1,10 @@
 #ifndef DEFINES_HPP
 #define DEFINES_HPP
 
-#define WIPE_DURATION 30 // 30 // in frames
-#define JUMP_DURATION 30 // 30
+#define WIPE_DURATION 30 // frames
+#define JUMP_DURATION 30
+#define POP_DRAG 0.01
+#define POP_LIFETIME 30 // frames
 
 // max mouse distance for acceleration calculation
 #define THEM_RADIUS 10 // Size of the them, in pixels
@@ -15,24 +17,24 @@
 #define LINK_WOBBLE 0.5f // disk radius pixels
 #define LINK_IFRAMES 30 // frames
 
-#define LINK_LIMIT 10
-#define BULLET_LIMIT 20
+#define LINK_LIMIT 10 // max links
+#define BULLET_LIMIT 20 // max bullets
 
 // Levels
-#define LEVEL1_SPAWN_INTERVAL 120 // 120 // frames
+#define LEVEL1_SPAWN_INTERVAL 120 // frames
 #define LEVEL1_SCORE_REQUIREMENT 50
 
-#define LEVEL2_SPAWN_INTERVAL 30 // 30 // frames
+#define LEVEL2_SPAWN_INTERVAL 30 // frames
 #define LEVEL2_SCORE_REQUIREMENT 200
 
-#define LEVEL3_SPAWN_INTERVAL 45 // 45 // frames
+#define LEVEL3_SPAWN_INTERVAL 45 // frames
 #define LEVEL3_SCORE_REQUIREMENT 400
 
-#define LEVEL4_SPAWN_INTERVAL 30 // 120 // frames
+#define LEVEL4_SPAWN_INTERVAL 30 // frames
 #define LEVEL4_SCORE_REQUIREMENT 600
 #define LEVEL4_RED_LIMIT 3;
 
-#define LEVEL5_SPAWN_INTERVAL 45 // 120 // frames
+#define LEVEL5_SPAWN_INTERVAL 45 // frames
 #define LEVEL5_SCORE_REQUIREMENT 700
 #define LEVEL5_BLUE_LIMIT 4
 #define LEVEL5_RED_LIMIT 4
