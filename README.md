@@ -24,3 +24,4 @@ Works best on Chrome / Firefox. Can also work on Safari if [WebGL 2.0](https://c
 - [x] package itch.io better
 - [ ] On-death animation
 - [x] <strike>fix itch.io banner</strike> replaced with a shield
+- [ ] better screenshots here and on itch.io

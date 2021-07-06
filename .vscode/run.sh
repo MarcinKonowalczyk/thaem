@@ -2,34 +2,70 @@
 # Example .run.sh
 echo "Hello from run script! ^_^"
 
-# Extension, filename and directory parts of the file which triggered this
-EXTENSION="${1##*.}"
-FILENAME=$(basename -- "$1")
-DIR="${1%/*}/"
-
-# The direcotry of the file folder from which this script is running
+# The direcotry of the main project from which this script is running
 # https://stackoverflow.com/a/246128/2531987
 ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-ROOT="${ROOT%/*}/"
+ROOT="${ROOT%/*}" # Strip .vscode folder
+NAME="${ROOT##*/}" # Project name
+PWD=$(pwd);
 
-# Debug print
-echo "EXTENSION : ${EXTENSION}"
-echo "FILENAME : ${FILENAME}"
-echo "DIR : ${DIR}"
-echo "ROOT : ${ROOT}"
+# Extension, filename and directory parts of the file which triggered this
+# http://mywiki.wooledge.org/BashSheet#Parameter_Operations
+FILE="$1"
+FILENAME="${FILE##*/}" # Filename with extension
+FILEPATH="${FILE%/*}" # Path of the current file
+FILEFOLDER="${FILEPATH##*/}" # Folder in which the current file is located (could be e.g. a nested subdirectory)
+EXTENSION="${FILENAME##*.}" # Just the extension
+ROOTFOLDER="${1##*$ROOT/}" && ROOTFOLDER="${ROOTFOLDER%%/*}" # folder in the root directory (not necesarilly the same as FILEFOLDER)
+[ $ROOTFOLDER != $FILENAME ] || ROOTFOLDER=""
 
+# Echo of path variables
+VERBOSE=false
+if $VERBOSE; then
+    # https://stackoverflow.com/a/5947802/2531987
+    GREEN='\033[0;32m'; YELLOW='\033[0;33m'; RED='\033[0;31m'; NC='\033[0m'
+    echo -e "ROOT       : $GREEN${ROOT}$NC  # root directory of the project"
+    echo -e "NAME       : $GREEN${NAME}$NC  # project name"
+    echo -e "PWD        : $GREEN${PWD}$NC  # pwd"
+    echo -e "FILE       : $GREEN${FILE}$NC # full file information"
+    echo -e "FILENAME   : $GREEN${FILENAME}$NC  # current filename"
+    echo -e "FILEPATH   : $GREEN${FILEPATH}$NC  # path of the current file"
+    echo -e "FILEFOLDER : $GREEN${FILEFOLDER}$NC  # folder in which the current file is located"
+    echo -e "EXTENSION  : $GREEN${EXTENSION}$NC  # just the extension of the current file"
+    if [ $ROOTFOLDER ]; then
+        if [ $ROOTFOLDER != $FILEFOLDER ]; then
+            echo -e "ROOTFOLDER : $GREEN${ROOTFOLDER}$NC # folder in the root directory"
+        else
+            echo -e "ROOTFOLDER : ${YELLOW}<same as FILEFOLDER>${NC}"
+        fi
+    else
+        echo -e "ROOTFOLDER : ${YELLOW}<file in ROOT>${NC}"
+    fi
+fi
+
+##################################################
+
+BUILD_DIR=${PWD##*/}
 TARGET="index"
-BUILD_DIR="build-osx"
-make --directory="${ROOT}/${BUILD_DIR}/"
-
-OUT=$?
-if [ $OUT == 0 ]; then
+if [ $BUILD_DIR == "build-osx" ]; then
+    make;
+    if [ $? == 0 ]; then
     echo "bash: Running $TARGET..."
-    (
-        cd "$ROOT/${BUILD_DIR}";
         "$ROOT/${BUILD_DIR}/$TARGET";
-    )
+    else
+        echo "bash: Compilation failed";
+        exit $OUT
+    fi
+elif [ $BUILD_DIR == "build-web" ]; then
+    emmake make;
+    if [ $? == 0 ]; then
+    echo "bash: Running $TARGET..."
+        emrun --port 8080 .
+    else
+        echo "bash: Compilation failed";
+        exit $OUT
+    fi
 else
-    echo "bash: Compilation failed";
-    exit $OUT
+    echo "Not in a build folder"
+    echo "cd to 'ROOT\build-osx' or '$ROOT\build-web' and try again"
 fi
