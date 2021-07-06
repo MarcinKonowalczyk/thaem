@@ -58,14 +58,12 @@ void Game::draw(piksel::Graphics& g) {
     g.textFont(font);
 
     // Update them when in a level
-    switch (state) {
-        LEVELS_SWITCH {
-            them.update(mousePosition, width, height, rightMousePressed, blueBullets, redBullets, blackBullets, score);
-            if (them.dead and !deathScreen) {
-                deathMessage = *select_randomly(deathMessages.begin(), deathMessages.end(), rng);
-                deathScreen = true;
-            }
-        } break;
+    switch (state) { LEVELS_SWITCH
+        them.update(mousePosition, width, height, rightMousePressed, blueBullets, redBullets, blackBullets, score);
+        if (them.dead and !deathScreen) {
+            deathMessage = *select_randomly(deathMessages.begin(), deathMessages.end(), rng);
+            deathScreen = true;
+        }
     }
 
     // Draw screens between levels
@@ -127,8 +125,7 @@ void Game::draw(piksel::Graphics& g) {
         }
     }
 
-    switch (state) {
-        INTERVALS_SWITCH {
+    switch (state) { INTERVALS_SWITCH
             g.push();
             g.textSize(30);
             g.strokeWeight(0);
@@ -139,15 +136,12 @@ void Game::draw(piksel::Graphics& g) {
             g.text(flavourText1, 10, height/2+15);
             g.text(flavourText2, 10, height/2+30+15);
             g.pop();
-        } break;
     }
 
-    // Draw levels
+    // Level states
     bool hasBlueBullets = false;
     bool hasRedBullets = false;
     bool hasBlackBullets = false;
-
-    // Default states
     int spawnInterval = LEVEL1_SPAWN_INTERVAL;
     int scoreRequirement = LEVEL1_SCORE_REQUIREMENT;
     GameState nextState = START;
@@ -218,64 +212,63 @@ void Game::draw(piksel::Graphics& g) {
         } break;
     }
 
-    switch (state) {
-        LEVELS_SWITCH {
-            if (spawnCounter == 0) { // Spawn new bullets
-            // Spawn randomly, retry if failed with the other color
-                if (hasBlueBullets and hasRedBullets and hasBlackBullets) {
-                    float choice = glm::linearRand(0.0, 1.0);
-                    bool success;
-                    if (choice < 0.33) {
-                        success = spawnBullet(T_BLUE, blueBullets, width, height, blueBulletLimit);
-                        if (!success) { success = spawnBullet(T_RED, redBullets, width, height, redBulletLimit); }
-                        if (!success) { success = spawnBullet(T_BLACK, blackBullets, width, height, blackBulletLimit); }
-                    } else if (choice < 0.66) {
-                        success = spawnBullet(T_RED, redBullets, width, height, redBulletLimit);
-                        if (!success) { success = spawnBullet(T_BLACK, blackBullets, width, height, blackBulletLimit); }
-                        if (!success) { success = spawnBullet(T_BLUE, blueBullets, width, height, blueBulletLimit); }
-                    } else {
-                        success = spawnBullet(T_BLACK, blackBullets, width, height, blackBulletLimit);
-                        if (!success) { success = spawnBullet(T_BLUE, blueBullets, width, height, blueBulletLimit); }
-                        if (!success) { success = spawnBullet(T_RED, redBullets, width, height, redBulletLimit); }
-                    }
-                    if (success) { spawnCounter = spawnInterval; }
-                } else if (hasBlueBullets and hasRedBullets) {
-                    float choice = glm::linearRand(0.0, 1.0);
-                    bool success;
-                    if (choice < 0.5) {
-                        success = spawnBullet(T_BLUE, blueBullets, width, height, blueBulletLimit);
-                        if (!success) { success = spawnBullet(T_RED, redBullets, width, height, redBulletLimit); }
-                    } else {
-                        success = spawnBullet(T_RED, redBullets, width, height, redBulletLimit);
-                        if (!success) { success = spawnBullet(T_BLUE, blueBullets, width, height, blueBulletLimit); }
-                    }
-                    if (success) { spawnCounter = spawnInterval; }
-                } else if (hasBlueBullets and hasBlackBullets) {
-                    float choice = glm::linearRand(0.0, 1.0);
-                    bool success;
-                    if (choice < 0.5) {
-                        success = spawnBullet(T_BLUE, blueBullets, width, height, blueBulletLimit);
-                        if (!success) { success = spawnBullet(T_BLACK, blackBullets, width, height, blackBulletLimit); }
-                    } else {
-                        success = spawnBullet(T_BLACK, blackBullets, width, height, blackBulletLimit);
-                        if (!success) { success = spawnBullet(T_BLUE, blueBullets, width, height, blueBulletLimit); }
-                    }
-                    if (success) { spawnCounter = spawnInterval; }
-                } else if (hasBlueBullets) {
-                    if (spawnBullet(T_BLUE, blueBullets, width, height, blueBulletLimit)) { spawnCounter = spawnInterval; }
-                } else if (hasRedBullets) {
-                    if (spawnBullet(T_RED, redBullets, width, height, redBulletLimit)) { spawnCounter = spawnInterval; }
+    // Spawn bullets
+    switch (state) { LEVELS_SWITCH
+        if (spawnCounter == 0) { // Spawn new bullets
+        // Spawn randomly, retry if failed with the other color
+            if (hasBlueBullets and hasRedBullets and hasBlackBullets) {
+                float choice = glm::linearRand(0.0, 1.0);
+                bool success;
+                if (choice < 0.33) {
+                    success = spawnBullet(T_BLUE, blueBullets, width, height, blueBulletLimit);
+                    if (!success) { success = spawnBullet(T_RED, redBullets, width, height, redBulletLimit); }
+                    if (!success) { success = spawnBullet(T_BLACK, blackBullets, width, height, blackBulletLimit); }
+                } else if (choice < 0.66) {
+                    success = spawnBullet(T_RED, redBullets, width, height, redBulletLimit);
+                    if (!success) { success = spawnBullet(T_BLACK, blackBullets, width, height, blackBulletLimit); }
+                    if (!success) { success = spawnBullet(T_BLUE, blueBullets, width, height, blueBulletLimit); }
+                } else {
+                    success = spawnBullet(T_BLACK, blackBullets, width, height, blackBulletLimit);
+                    if (!success) { success = spawnBullet(T_BLUE, blueBullets, width, height, blueBulletLimit); }
+                    if (!success) { success = spawnBullet(T_RED, redBullets, width, height, redBulletLimit); }
                 }
-            } else if ( spawnCounter > 0 ) {
-                spawnCounter--;
-            };
-
-            // Handle winning a level
-            if (score >= scoreRequirement and wipeCounter == 0 and !them.dead) {
-                wipeCounter = WIPE_DURATION;
-                queuedState = nextState;
+                if (success) { spawnCounter = spawnInterval; }
+            } else if (hasBlueBullets and hasRedBullets) {
+                float choice = glm::linearRand(0.0, 1.0);
+                bool success;
+                if (choice < 0.5) {
+                    success = spawnBullet(T_BLUE, blueBullets, width, height, blueBulletLimit);
+                    if (!success) { success = spawnBullet(T_RED, redBullets, width, height, redBulletLimit); }
+                } else {
+                    success = spawnBullet(T_RED, redBullets, width, height, redBulletLimit);
+                    if (!success) { success = spawnBullet(T_BLUE, blueBullets, width, height, blueBulletLimit); }
+                }
+                if (success) { spawnCounter = spawnInterval; }
+            } else if (hasBlueBullets and hasBlackBullets) {
+                float choice = glm::linearRand(0.0, 1.0);
+                bool success;
+                if (choice < 0.5) {
+                    success = spawnBullet(T_BLUE, blueBullets, width, height, blueBulletLimit);
+                    if (!success) { success = spawnBullet(T_BLACK, blackBullets, width, height, blackBulletLimit); }
+                } else {
+                    success = spawnBullet(T_BLACK, blackBullets, width, height, blackBulletLimit);
+                    if (!success) { success = spawnBullet(T_BLUE, blueBullets, width, height, blueBulletLimit); }
+                }
+                if (success) { spawnCounter = spawnInterval; }
+            } else if (hasBlueBullets) {
+                if (spawnBullet(T_BLUE, blueBullets, width, height, blueBulletLimit)) { spawnCounter = spawnInterval; }
+            } else if (hasRedBullets) {
+                if (spawnBullet(T_RED, redBullets, width, height, redBulletLimit)) { spawnCounter = spawnInterval; }
             }
-        } break;
+        } else if ( spawnCounter > 0 ) {
+            spawnCounter--;
+        };
+
+        // Handle winning a level
+        if (score >= scoreRequirement and wipeCounter == 0 and !them.dead) {
+            wipeCounter = WIPE_DURATION;
+            queuedState = nextState;
+        }
     }
 
     // Update and draw bullets
@@ -299,23 +292,18 @@ void Game::draw(piksel::Graphics& g) {
     }
 
     // Draw the them
-    switch (state) {
-        LEVELS_SWITCH {
-            them.draw(g, mousePosition, rightMousePressed);
-        } break;
+    switch (state) { LEVELS_SWITCH
+        them.draw(g, mousePosition, rightMousePressed);
     }
 
     // Print score if in a level
-    switch (state) {
-        LEVELS_SWITCH {
+    switch (state) { LEVELS_SWITCH
             g.push();
             g.textSize(25);
             g.strokeWeight(0);
             g.fill(glm::vec4(BLACK_3,0.1));
             g.text(getScoreString(score) + " / " + getScoreString(scoreRequirement), 10, 28);
             g.pop();
-        }
-        default:;
     }
 
     // Draw death screen
@@ -386,14 +374,12 @@ void Game::mouseMoved(int x, int y) {
 }
 
 void Game::mousePressed(int button) {
-    switch (state) {
-        LEVELS_SWITCH {
-            if (button == RIGHT_MOUSE_BUTTON ) {
-                rightMousePressed = true;
-            } else if (button == LEFT_MOUSE_BUTTON) {
-                them.addLink(mousePosition, score);
-            }
-        } break;
+    switch (state) { LEVELS_SWITCH
+        if (button == RIGHT_MOUSE_BUTTON ) {
+            rightMousePressed = true;
+        } else if (button == LEFT_MOUSE_BUTTON) {
+            them.addLink(mousePosition, score);
+        }
     }
 
     if (button == LEFT_MOUSE_BUTTON) {
