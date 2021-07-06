@@ -80,7 +80,9 @@ void Game::draw(piksel::Graphics& g) {
             g.fill(BLACK);
             g.text("TH", 10, height/2-20);
             g.fill(glm::mix(LINES_B,BLACK,0.2));
-            g.text("AE", 53.5, height/2-20);
+            g.text("A", 53.5, height/2-20);
+            g.fill(glm::mix(LINES_R,BLACK,0.2));
+            g.text("E", 75, height/2-20);
             g.fill(BLACK);
             g.text("M", 95.5, height/2-20);
             g.textSize(30);
