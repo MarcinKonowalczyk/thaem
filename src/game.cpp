@@ -1,4 +1,5 @@
 #include "game.hpp"
+
 #include "defines.hpp"
 #include "colors.hpp"
 #include "interval_transforms.hpp"
@@ -67,7 +68,11 @@ void Game::draw(piksel::Graphics& g) {
     switch (state) { LEVELS_SWITCH
         them.update(mousePosition, width, height, rightMousePressed, blueBullets, redBullets, blackBullets, pops, score);
         if (them.dead and !deathScreen) {
-            deathMessage = *select_randomly(deathMessages.begin(), deathMessages.end(), rng);
+            if (horridMode) {
+                deathMessage = "YOU DIED";
+            } else {
+                deathMessage = *select_randomly(deathMessages.begin(), deathMessages.end(), rng);
+            }
             deathScreen = true;
         }
     }
@@ -393,6 +398,12 @@ void Game::draw(piksel::Graphics& g) {
     } else {
         vectorShuffleCounter--;
     }
+
+    // Save frame
+    #ifdef SAVE_FRAMES
+    saveFrame(frame_counter, width, height);
+    #endif /* SAVE_FRAMES */
+    frame_counter++;
 }
 
 void Game::mouseMoved(int x, int y) {
