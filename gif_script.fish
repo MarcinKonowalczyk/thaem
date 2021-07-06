@@ -13,4 +13,4 @@
 convert -delay 3 -flip -verbose *.png +dither "output_dither.gif"
 
 # compress gif
-gifsicle -O1 --loopcount forever output_dither.gif -o output_web.gif
+gifsicle -O3 --loopcount forever output_dither.gif -o output_web.gif
