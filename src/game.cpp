@@ -63,32 +63,32 @@ void Game::draw(piksel::Graphics& g) {
     g.strokeWeight(0);
     switch (state) {
         LEVELS_SWITCH {
-            g.background(glm::mix(BLACK_4,WHITE_4,0.5));
+            g.background(glm::mix(BLACK_4,WHITE_4,0.55));
             float circle_diameter = glm::max(width,height)+2*50;
             int N = ((int)circle_diameter)/50;
             // for (float alpha = 0; alpha <= 1.0; alpha+=0.05) {
             for (int i = 0; i < N; i++) {
                 float alpha = i/(float)N;
                 float r = circle_diameter*(1-alpha); 
-                g.fill(glm::mix(BLACK_4,WHITE_4,0.5+0.1*fastStart4(alpha)));
+                g.fill(glm::mix(BLACK_4,WHITE_4,0.55+0.1*fastStart4(alpha)));
                 // if (rightMousePressed) { r += glm::linearRand(-5.0,5.0); };
                 g.ellipse(width/2,height/2,r,r);
             }
         } break;
         INTERVALS_SWITCH {
-            float bar_height = 50/2; //height/2/(float)N;
+            float bar_height = 50/2;
             int N = ceil(height/2/bar_height);
             for (int i = 0; i < N; i++) {
-                g.fill(glm::mix(BLACK_4,WHITE_4,0.5+0.1*fastStart4(i/(float)N)));
+                g.fill(glm::mix(BLACK_4,WHITE_4,0.55+0.1*fastStart4(i/(float)N)));
                 g.rect(0,0+i*bar_height,width,bar_height);
             }
             for (int i = 0; i < N; i++) {
-                g.fill(glm::mix(BLACK_4,WHITE_4,0.5+0.1*fastStart4(i/(float)N)));
+                g.fill(glm::mix(BLACK_4,WHITE_4,0.55+0.1*fastStart4(i/(float)N)));
                 g.rect(0,height-(i+1)*bar_height,width,bar_height);
             }
         } break;
         case START: {
-            g.background(glm::mix(BLACK_4,WHITE_4,0.55));
+            g.background(glm::mix(BLACK_4,WHITE_4,0.60));
         } break;
     }
     g.pop();
@@ -341,19 +341,19 @@ void Game::draw(piksel::Graphics& g) {
     if (hasBlueBullets) {
         if (!blueBullets.empty()) {
             for (Bullet& bullet : blueBullets) { bullet.update(mousePosition, width, height, rightMousePressed, blueBullets, redBullets, blackBullets, them.position, blueDragMultiplier, redDragMultiplier); }
-            for (Bullet& bullet : blueBullets) { bullet.draw(g, rightMousePressed, mousePosition, them.position, blueBullets, redBullets, them.dead); }
+            for (Bullet& bullet : blueBullets) { bullet.draw(g, rightMousePressed, mousePosition, width, height, them.position, blueBullets, redBullets, them.dead); }
         }
     }
     if (hasRedBullets) {
         if (!redBullets.empty()) { // Update and draw bullets
             for (Bullet& bullet : redBullets) { bullet.update(mousePosition, width, height, rightMousePressed, blueBullets, redBullets, blackBullets, them.position, blueDragMultiplier, redDragMultiplier); }
-            for (Bullet& bullet : redBullets) { bullet.draw(g, rightMousePressed, mousePosition, them.position, blueBullets, redBullets, them.dead); }
+            for (Bullet& bullet : redBullets) { bullet.draw(g, rightMousePressed, mousePosition, width, height, them.position, blueBullets, redBullets, them.dead); }
         }
     }
     if (hasBlackBullets) {
         if (!blackBullets.empty()) { // Update and draw bullets
             for (Bullet& bullet : blackBullets) { bullet.update(mousePosition, width, height, rightMousePressed, blueBullets, redBullets, blackBullets, them.position, blueDragMultiplier, redDragMultiplier); }
-            for (Bullet& bullet : blackBullets) { bullet.draw(g, rightMousePressed, mousePosition, them.position, blueBullets, redBullets, them.dead); }
+            for (Bullet& bullet : blackBullets) { bullet.draw(g, rightMousePressed, mousePosition, width, height, them.position, blueBullets, redBullets, them.dead); }
         }
     }
 

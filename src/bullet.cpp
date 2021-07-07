@@ -119,6 +119,7 @@ void Bullet::draw(
     piksel::Graphics& g,
     bool rightMousePressed,
     glm::vec2 mousePosition,
+    float width, float height,
     glm::vec2 themPosition,
     std::vector<Bullet>& blueBullets,
     std::vector<Bullet>& redBullets,
@@ -157,14 +158,34 @@ void Bullet::draw(
         case T_RED: { g.fill(LINES_R); radius = RED_BULLET_RADIUS; } break;
         case T_BLACK: { g.fill(BLACK); radius = BLACK_BULLET_RADIUS; } break;
     }
+
     g.ellipse(position.x, position.y, radius, radius);
+
+    if (position.x < 0) {
+        g.triangle(1,position.y,10,position.y+5,10,position.y-5);
+        g.strokeWeight(2);
+        g.line(10,position.y+5,10,position.y-5);
+    } else if (position.x > width) {
+        g.triangle(width-1,position.y,width-10,position.y+5,width-10,position.y-5);
+        g.strokeWeight(2);
+        g.line(width-10,position.y+5,width-10,position.y-5);
+    };
+    if (position.y < 0) {
+        g.triangle(position.x,1,position.x-5,10,position.x+5,10);
+        g.strokeWeight(2);
+        g.line(position.x-5,10,position.x+5,10);
+    } else if (position.y > height) {
+        g.triangle(position.x,height-1,position.x-5,height-10,position.x+5,height-10);
+        g.strokeWeight(2);
+        g.line(position.x-5,height-10,position.x+5,height-10);
+    }
 };
 
 void Bullet::hit() {
     if (durability > 0) { durability--; }
 }
 
-const int bulletOffset = 10;
+const int bulletOffset = BULLET_SPAWN_OFFSET;
 
 Bullet makeBullet(float width, float height) {
     Bullet newBullet = Bullet();

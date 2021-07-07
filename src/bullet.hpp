@@ -36,6 +36,7 @@ public:
         piksel::Graphics& g,
         bool rightMousePressed,
         glm::vec2 mousePosition,
+        float width, float height,
         glm::vec2 themPosition,
         std::vector<Bullet>& blueBullets,
         std::vector<Bullet>& redBullets,
