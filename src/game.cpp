@@ -56,8 +56,42 @@ void Game::setup() {
 }
 
 void Game::draw(piksel::Graphics& g) {
-    g.background(glm::vec4(GREY_3, 0.9f));
     g.textFont(font);
+
+    // Draw background
+    g.push();
+    g.strokeWeight(0);
+    switch (state) {
+        LEVELS_SWITCH {
+            g.background(glm::mix(BLACK_4,WHITE_4,0.5));
+            float circle_diameter = glm::max(width,height)+2*50;
+            int N = ((int)circle_diameter)/50;
+            // for (float alpha = 0; alpha <= 1.0; alpha+=0.05) {
+            for (int i = 0; i < N; i++) {
+                float alpha = i/(float)N;
+                float r = circle_diameter*(1-alpha); 
+                g.fill(glm::mix(BLACK_4,WHITE_4,0.5+0.1*fastStart4(alpha)));
+                // if (rightMousePressed) { r += glm::linearRand(-5.0,5.0); };
+                g.ellipse(width/2,height/2,r,r);
+            }
+        } break;
+        INTERVALS_SWITCH {
+            float bar_height = 50/2; //height/2/(float)N;
+            int N = ceil(height/2/bar_height);
+            for (int i = 0; i < N; i++) {
+                g.fill(glm::mix(BLACK_4,WHITE_4,0.5+0.1*fastStart4(i/(float)N)));
+                g.rect(0,0+i*bar_height,width,bar_height);
+            }
+            for (int i = 0; i < N; i++) {
+                g.fill(glm::mix(BLACK_4,WHITE_4,0.5+0.1*fastStart4(i/(float)N)));
+                g.rect(0,height-(i+1)*bar_height,width,bar_height);
+            }
+        } break;
+        case START: {
+            g.background(glm::mix(BLACK_4,WHITE_4,0.55));
+        } break;
+    }
+    g.pop();
 
     // Update pops if in a level (and if any exist)
     switch (state) { LEVELS_SWITCH
@@ -330,12 +364,12 @@ void Game::draw(piksel::Graphics& g) {
 
     // Print score if in a level
     switch (state) { LEVELS_SWITCH
-            g.push();
-            g.textSize(25);
-            g.strokeWeight(0);
-            g.fill(glm::vec4(BLACK_3,0.1));
-            g.text(getScoreString(score) + " / " + getScoreString(scoreRequirement), 10, 28);
-            g.pop();
+        g.push();
+        g.textSize(25);
+        g.strokeWeight(0);
+        g.fill(glm::vec4(BLACK_3,0.2));
+        g.text(getScoreString(score) + " / " + getScoreString(scoreRequirement), 10, 28);
+        g.pop();
     }
 
     // Draw death screen
