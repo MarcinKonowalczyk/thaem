@@ -7,6 +7,8 @@
 
 THAEM uses waypoints to create a path for the player, which it also used to interact with enemies (bullets). The behaviour of all of the components of the game (player and the bullets) is related to the behaviour of many other components. Hence, they can be considered all to be linked together.
 
+Game made in a single weekend for GMTK 2021 GameJam.
+
 Made using C++ and [piksel](https://bernhardfritz.github.io/piksel/).
 
 [Emscripten](http://kripken.github.io/emscripten-site/index.html) installed with `brew install emscripten`.
@@ -15,7 +17,7 @@ Made using C++ and [piksel](https://bernhardfritz.github.io/piksel/).
 
 Works best on Chrome / Firefox. Can also work on Safari if [WebGL 2.0](https://caniuse.com/webgl2) is enabled with `Develop > Experimental Features > WebGL 2.0`.
 
-<img align=center width=300 src="./img/thaem_gameplay.gif" style="margin:10px">
+<img align=right width=300 src="./img/thaem_gameplay.gif" style="margin:10px">
 
 ## Make gifs
 
