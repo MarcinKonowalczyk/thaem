@@ -3,11 +3,11 @@
 
 # THAEM
 
-[![itch.io](https://img.shields.io/badge/itch.io-play%20it%20now-informational)](https://marcinkonowalczyk.itch.io/thaem)
+[![itch.io](https://img.shields.io/badge/itch.io-play%20it%20now-informational)](https://marcinkonowalczyk.itch.io/thaem) [![Made with piksel](https://shields.io/badge/-made%20with%20piksel-darkgrey?color=555555&logo=data:image/png;base64,Qk0yBAAAAAAAAIoAAAB8AAAADQAAABIAAAABACAAAwAAAKgDAABGXAAARlwAAAAAAAAAAAAAAAD/AAD/AAD/AAAAAAAA/0JHUnMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP8AAAD/AAAA/wAAAP8AAAD/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/wAAAP8A/6r/AP+q/wD/qv8A/6r/AP+q/wAAAP8AAAD/AAAAAAAAAAAAAAAAAAAA/wD/qv8A/6r/AP/d/wD/3f8A/93/AP/d/wD/3f8A/6r/AP+q/wAAAP8AAAAAAAAAAAAAAP8A/93/AP/d/wD/3f8A/93/AP/d/wD/3f8A/93/AP/d/wD/qv8AAAD/AAAAAAAAAP8A/6r/AP/d/wD/3f8A/93/AP/d/wD/3f8A/93/AP/d/wD/3f8A/93/AP+q/wAAAP8AAAD/iAD//4gA//8A/93/AP/d/wD/3f8A/93/AP/d/wD/3f+IAP//iAD//wD/3f8AAAD/AAAA/wD/3f8AAAD/AAAA/wD/3f8AAAD/AAAA/wD/3f8AAAD/AAAA/wD/3f8A/93/AAAA/wAAAP8A/93//////wAAAP8A/93/AP/d/wD/3f8A/93//////wAAAP8A/93/AP/d/wAAAP8AAAD/AP/d/wD/3f8A/93/AP/d/wD/3f8A/93/AP/d/wD/3f8A/93/AP/d/wD/3f8AAAD/AAAAAAAAAP8A/93/AP/d/wD/3f8A/93/AP/d/wD/3f8A/93/AP/d/wD/3f8AAAD/AAAAAAAAAAAAAAAAAAAA/wD/3f8A/93/AP/d/wD/3f8A/93/AP/d/wD/3f8AAAD/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/AP/d/wD/3f8A/93/AP/d/wD/3f8AAAD/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/wD/3f8A/93/AP/d/wD/3f8A/93/AAAA/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP8A/93/AP/d/wAAAP8A/93/AP/d/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/wAAAP8AAAD/AAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/AAAA/wAAAAAAAAAAAAAAAAAAAAAAAAAA)](https://bernhardfritz.github.io/piksel/#/)
 
 THAEM uses waypoints to create a path for the player, which it also used to interact with enemies (bullets). The behaviour of all of the components of the game (player and the bullets) is related to the behaviour of many other components. Hence, they can be considered all to be linked together.
 
-Game made in a single weekend for GMTK 2021 GameJam.
+Game made in a single weekend for GMTK 2021 GameJam. Small updates and bugfixes since.
 
 Made using C++ and [piksel](https://bernhardfritz.github.io/piksel/).
 
@@ -32,13 +32,16 @@ The frames are saves as [Portable Pixel Map](http://paulbourke.net/dataformats/p
 - [ ] Add subtle lightning effect to links
 - [ ] Make circles slightly wobbly (so they don't just look like circles)
   - [ ] But probably don't touch the collision system
-- [x] Subtle background decorations (vignette?)
-- [x] Brighter background
 - [ ] Animated background on itch.io
-- [x] Bullet approach indicators
+- [ ] update gif and logo (again)
+- [ ] ? larger title screen letters
+- [ ] ? title screen decoration
 
 ## Dones
 
+- [x] Bullet approach indicators
+- [x] Subtle background decorations (vignette?)
+- [x] Brighter background
 - [x] Find better fonts hack
 - [x] Link in itch.io
 - [x] Second level to hard? Endless needs lower points ceiling. Maybe just lower points requirements in general?
